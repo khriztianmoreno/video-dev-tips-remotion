@@ -11,17 +11,27 @@ import {
 import type { Theme } from '../../theme';
 import type { LayoutMetrics } from '../../layout-metrics';
 import { interFontFamily } from '../../fonts';
-import { HEART_IMAGE_URL, OUTRO_IMAGE_URL, OUTRO_MESSAGE } from '../../outro';
+import {
+  DEFAULT_OUTRO_QUESTION,
+  FOLLOW_LABEL,
+  HEART_IMAGE_URL,
+  OUTRO_IMAGE_URL,
+} from '../../outro';
 
 interface OutroSceneProps {
   theme: Theme;
   metrics: LayoutMetrics;
+  question?: string;
 }
 
 const resolveSrc = (src: string) =>
   src.startsWith('http') ? src : staticFile(src);
 
-export const OutroScene: React.FC<OutroSceneProps> = ({ theme, metrics }) => {
+export const OutroScene: React.FC<OutroSceneProps> = ({
+  theme,
+  metrics,
+  question,
+}) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
@@ -50,8 +60,8 @@ export const OutroScene: React.FC<OutroSceneProps> = ({ theme, metrics }) => {
       <Img
         src={resolveSrc(OUTRO_IMAGE_URL)}
         style={{
-          width: '82%',
-          maxHeight: '55%',
+          width: '78%',
+          maxHeight: '45%',
           objectFit: 'contain',
           opacity: imageOpacity,
           transform: `scale(${0.92 + 0.08 * enter})`,
@@ -60,10 +70,11 @@ export const OutroScene: React.FC<OutroSceneProps> = ({ theme, metrics }) => {
       <div
         style={{
           display: 'flex',
+          flexDirection: 'column',
           alignItems: 'center',
-          justifyContent: 'center',
-          gap: metrics.stepTitleFontSize * 0.4,
+          gap: metrics.contentGap * 0.6,
           opacity: messageOpacity,
+          maxWidth: '92%',
         }}
       >
         <span
@@ -71,16 +82,33 @@ export const OutroScene: React.FC<OutroSceneProps> = ({ theme, metrics }) => {
             color: theme.primaryColor,
             fontSize: metrics.stepTitleFontSize,
             fontWeight: 800,
-            textTransform: 'uppercase',
             textAlign: 'center',
+            lineHeight: 1.2,
           }}
         >
-          {OUTRO_MESSAGE}
+          {question ?? DEFAULT_OUTRO_QUESTION}
         </span>
-        <Img
-          src={resolveSrc(HEART_IMAGE_URL)}
-          style={{ height: metrics.stepTitleFontSize, objectFit: 'contain' }}
-        />
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: metrics.narrationFontSize * 0.5,
+          }}
+        >
+          <span
+            style={{
+              color: theme.mutedTextColor,
+              fontSize: metrics.narrationFontSize,
+              fontWeight: 600,
+            }}
+          >
+            {FOLLOW_LABEL}
+          </span>
+          <Img
+            src={resolveSrc(HEART_IMAGE_URL)}
+            style={{ height: metrics.narrationFontSize, objectFit: 'contain' }}
+          />
+        </div>
       </div>
     </AbsoluteFill>
   );

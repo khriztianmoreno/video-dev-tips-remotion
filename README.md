@@ -156,8 +156,10 @@ type VideoStep = {
   codeSnippet?: string;          // Optional code block (typewriter-animated)
   language?: 'typescript' | 'javascript' | 'bash';
   imageUrl?: string;             // Optional image (public/-relative path or http(s) URL)
+  imageFocus?: { scale?: number; x?: number; y?: number }; // Zoom/pan into a region
+  videoUrl?: string;             // Optional screen recording (rendered with OffthreadVideo)
   narrationText: string;         // Always shown, fades in after the code
-  audioUrl?: string;             // Reserved for TTS integration (not wired yet)
+  audioUrl?: string;             // Optional voiceover; scene duration follows the audio length
 };
 
 type Theme = {
@@ -175,9 +177,20 @@ type TopicMetadata = {
   category: string;
   displayTitle: string;
   theme?: Partial<Theme>;        // Optional — any omitted field uses the brand default
+  ctaQuestion?: string;          // Optional open question shown on the outro
   timeline: VideoStep[];
 };
 ```
+
+## Dynamism: voiceover, motion, music
+
+Short-form platforms reward movement and a human voice. On top of the data-driven base, a topic can opt into:
+
+- **Voiceover** — set `audioUrl` on a step (a file in `public/` or a URL). The scene's duration is then **derived from the audio length** automatically (`calculateMetadata` in `src/Root.tsx`), so narration is never cut off. You stop hand-tuning `durationInSeconds` for voiced scenes.
+- **Screen recordings** — set `videoUrl` on a step to play a real clip (`<OffthreadVideo>`) instead of a static screenshot; ideal for showing a click, a filling waterfall, or a dropdown. Duration follows the clip.
+- **Zoom / focus on screenshots** — set `imageFocus: { scale, x, y }` to zoom into the region you're explaining so small UI detail reads on mobile. Every image also gets a subtle Ken Burns drift.
+- **Background music** — configure `src/audio.ts` (`backgroundMusic.src` + `volume`). Drop a low-volume track in `public/`; it loops under the whole video. Off by default.
+- **Engagement CTA** — the outro shows an open question to spark comments. Set `ctaQuestion` per topic; otherwise a generic default is used.
 
 ## Versioning topics
 
@@ -292,7 +305,7 @@ pnpm render-topic conceptos--array-filter--v1 out/april-batch
 | Frame rate | 30 fps | `FPS` constant in `src/Root.tsx` |
 | Image format (intra-frame) | JPEG | `Config.setVideoImageFormat` in `remotion.config.ts` |
 | Output overwrite | Allowed | `Config.setOverwriteOutput` in `remotion.config.ts` |
-| Audio | None yet | Reserved — `audioUrl` on `VideoStep` is wired to be added |
+| Audio | Per-step voiceover + global background music | `audioUrl` on a `VideoStep` (drives that scene's duration); `backgroundMusic` in `src/audio.ts` |
 
 The first render downloads a headless Chromium shell (~95 MB). Subsequent renders reuse it.
 
@@ -373,7 +386,7 @@ It is **not** stored in the content files — `Root.tsx` adds its duration via `
 
 ## Roadmap
 
-- TTS integration: auto-generate `audioUrl` from `narrationText` via ElevenLabs / OpenAI and sync with steps.
+- Voiceover playback + audio-driven scene durations are wired (`audioUrl`). Still open: auto-**generating** `audioUrl` from `narrationText` via ElevenLabs / OpenAI TTS.
 - Per-step transitions (spring-based slide/fade between sequences).
 - Pre-rendered Shiki tokens at codegen time for richer themes without runtime cost.
 - ~~LLM-assisted scaffolding~~ — done via the `author-video-topic` skill (see [Authoring with AI](#authoring-with-ai-skills)). A `pnpm new-topic "<prompt>"` CLI wrapper is still open.

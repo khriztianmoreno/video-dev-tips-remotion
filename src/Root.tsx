@@ -1,11 +1,42 @@
 import React from 'react';
-import { Composition } from 'remotion';
+import { Composition, staticFile } from 'remotion';
+import { getAudioDurationInSeconds, getVideoMetadata } from '@remotion/media-utils';
 import { ShortVideoLayout } from './compositions/ShortVideoLayout';
 import { allTopics } from './_generated/topics';
 import { formats } from './formats';
 import { withOutro } from './outro';
+import type { VideoStep } from './types/content';
 
 const FPS = 30;
+
+const resolveSrc = (src: string) =>
+  src.startsWith('http') ? src : staticFile(src);
+
+const round1 = (n: number) => Math.round(n * 10) / 10;
+
+/**
+ * Resolve each step's on-screen duration. When a scene has voiceover (`audioUrl`)
+ * or a screen recording (`videoUrl`), the duration follows the media length so the
+ * narration is never cut off. Falls back to the declared `durationInSeconds`.
+ */
+const resolveTimeline = async (timeline: VideoStep[]): Promise<VideoStep[]> =>
+  Promise.all(
+    timeline.map(async (step) => {
+      try {
+        if (step.audioUrl) {
+          const sec = await getAudioDurationInSeconds(resolveSrc(step.audioUrl));
+          return { ...step, durationInSeconds: round1(sec + 0.4) };
+        }
+        if (step.videoUrl) {
+          const meta = await getVideoMetadata(resolveSrc(step.videoUrl));
+          return { ...step, durationInSeconds: round1(meta.durationInSeconds) };
+        }
+      } catch {
+        // Media unreadable at metadata time — keep the declared duration.
+      }
+      return step;
+    })
+  );
 
 export const RemotionRoot: React.FC = () => (
   <>
@@ -22,13 +53,16 @@ export const RemotionRoot: React.FC = () => (
             height={format.height}
             durationInFrames={1}
             defaultProps={topic}
-            calculateMetadata={({ props }) => ({
-              durationInFrames:
-                withOutro(props.timeline).reduce(
+            calculateMetadata={async ({ props }) => {
+              const timeline = await resolveTimeline(props.timeline);
+              const durationInFrames = Math.round(
+                withOutro(timeline).reduce(
                   (acc, step) => acc + step.durationInSeconds,
                   0
-                ) * FPS,
-            })}
+                ) * FPS
+              );
+              return { durationInFrames, props: { ...props, timeline } };
+            }}
           />
         );
       })

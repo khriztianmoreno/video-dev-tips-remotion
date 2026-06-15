@@ -114,6 +114,21 @@ Per scene:
   forward. The first hooks, the last lands the takeaway.
 - `id`: `step-1`, `step-2`, … unique within the topic.
 
+#### Retention & motion (short-form needs movement + a human)
+Static text-only scenes read as a slideshow and lose viewers in the first 2-3 s. Prefer
+motion and voice where it helps:
+- **Voiceover (`audioUrl`)** is the highest-impact lever — a human voice raises retention.
+  When a scene has `audioUrl`, its duration is derived from the audio length automatically
+  (you don't hand-set `durationInSeconds` for that scene). Suggest the user record/generate
+  per-scene MP3s into `public/`.
+- **Screen recordings (`videoUrl`)** beat static screenshots for tool/UI topics — show the
+  click, the waterfall filling, the throttling dropdown opening. Duration follows the clip.
+- **`imageFocus`** zooms/pans into the relevant region of a screenshot so small UI detail is
+  legible on mobile (e.g. `{ scale: 1.8, x: 0.42, y: 0.28 }`). Use it whenever a screenshot
+  has tiny text/icons. A subtle Ken Burns drift is applied to every image automatically.
+- **Background music** is global (`src/audio.ts`); the user drops a low-volume track. Don't
+  set it per scene.
+
 ### 4. Format decisions
 Set and state explicitly: language, category, total duration (= sum of scenes), version,
 and `topic` in kebab-case (only `[a-z0-9-]`, must match the folder name and the `id` field).
@@ -222,8 +237,10 @@ type VideoStep = {
   codeSnippet?: string;       // code block (typewriter)
   language?: 'typescript' | 'javascript' | 'bash';
   imageUrl?: string;          // optional image: public/-relative path or http(s) URL
+  imageFocus?: { scale?: number; x?: number; y?: number }; // zoom/pan into a region
+  videoUrl?: string;          // optional screen recording (OffthreadVideo)
   narrationText: string;      // ALWAYS present — subtitle/voice
-  audioUrl?: string;          // reserved for TTS, do not use yet
+  audioUrl?: string;          // optional voiceover; sets the scene duration from its length
 };
 
 type TopicMetadata = {
@@ -232,6 +249,7 @@ type TopicMetadata = {
   category: string;           // folder under content/
   displayTitle: string;
   theme?: Partial<Theme>;     // optional; omit = brand defaults
+  ctaQuestion?: string;       // open question shown on the outro (override the default)
   timeline: VideoStep[];
 };
 ```
@@ -246,11 +264,12 @@ independent compositions in Studio (great for A/B comparisons).
 
 ## Conventions and constraints
 
-- **Do NOT add a follow/CTA/outro scene.** A brand outro ("follow `@khriztianmoreno`" with
-  the insignia image) is appended automatically to every video by the render pipeline
-  (`src/outro.ts` via `withOutro`). Your last scene must be the topic's *takeaway*, never a
-  social CTA — the outro comes after it for free. To change the handle/image/copy, edit
-  `src/outro.ts`, not the content files.
+- **Do NOT add a follow/CTA/outro scene.** A brand outro is appended automatically to every
+  video by the render pipeline (`src/outro.ts` / `OutroScene`): the insignia, an open
+  question, and a follow line. Your last scene must be the topic's *takeaway*, never a social
+  CTA — the outro comes after it for free. **Do** set a topic-specific `ctaQuestion` (an open
+  question that invites comments, e.g. "¿Tu peor cuello de botella?"); without it a generic
+  default is used. To change the handle/image/follow copy, edit `src/outro.ts`.
 - **Default language: Spanish.** Keep `title` and `narrationText` consistent in one language.
 - Topic `id`, folder name, and kebab-case must all match.
 - Composition id only allows `[a-zA-Z0-9-]`; the project separator is `--`.

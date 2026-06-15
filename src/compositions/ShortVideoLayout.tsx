@@ -1,5 +1,5 @@
 import React from 'react';
-import { AbsoluteFill, Sequence, useVideoConfig } from 'remotion';
+import { AbsoluteFill, Audio, Sequence, staticFile, useVideoConfig } from 'remotion';
 import type { TopicMetadata } from '../types/content';
 import { resolveTheme } from '../theme';
 import { getLayoutMetrics } from '../layout-metrics';
@@ -8,10 +8,12 @@ import { CodeRunner } from './components/CodeRunner';
 import { BrandFooter } from './components/BrandFooter';
 import { OutroScene } from './components/OutroScene';
 import { outroStep } from '../outro';
+import { backgroundMusic } from '../audio';
 
 export const ShortVideoLayout: React.FC<TopicMetadata> = ({
   displayTitle,
   theme,
+  ctaQuestion,
   timeline,
 }) => {
   const { fps, width, height } = useVideoConfig();
@@ -48,8 +50,24 @@ export const ShortVideoLayout: React.FC<TopicMetadata> = ({
 
       {/* Brand outro: own scene, no title banner, no footer. */}
       <Sequence from={contentFrames} durationInFrames={outroFrames}>
-        <OutroScene theme={resolvedTheme} metrics={metrics} />
+        <OutroScene
+          theme={resolvedTheme}
+          metrics={metrics}
+          question={ctaQuestion}
+        />
       </Sequence>
+
+      {backgroundMusic.src && (
+        <Audio
+          src={
+            backgroundMusic.src.startsWith('http')
+              ? backgroundMusic.src
+              : staticFile(backgroundMusic.src)
+          }
+          volume={backgroundMusic.volume}
+          loop
+        />
+      )}
     </AbsoluteFill>
   );
 };

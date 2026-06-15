@@ -12,17 +12,24 @@ export const SOCIAL_HANDLE = '@khriztianmoreno';
 export const OUTRO_IMAGE_URL =
   'https://res.cloudinary.com/khriztianmoreno/image/upload/v1622908244/km_site/insignia.png';
 
-/** Heart graphic shown next to the message (public/-relative path or http(s) URL). */
+/** Heart graphic shown next to the follow line (public/-relative path or http(s) URL). */
 export const HEART_IMAGE_URL = 'brand/love.png';
 
-/** Message shown below the central image. */
-export const OUTRO_MESSAGE = 'Sígueme para más tips';
+/**
+ * Open question shown on the outro to spark comments. A topic can override it with
+ * `ctaQuestion` in its `TopicMetadata`; otherwise this generic one is used.
+ */
+export const DEFAULT_OUTRO_QUESTION =
+  '¿Tú cómo lo resuelves? Cuéntame en los comentarios';
+
+/** Small follow label under the question. */
+export const FOLLOW_LABEL = `Sígueme en ${SOCIAL_HANDLE}`;
 
 export const outroStep: VideoStep = {
   id: 'outro-follow',
   durationInSeconds: 6,
   imageUrl: OUTRO_IMAGE_URL,
-  narrationText: OUTRO_MESSAGE,
+  narrationText: DEFAULT_OUTRO_QUESTION,
 };
 
 /** Returns the topic timeline with the brand outro appended (used for duration sums). */

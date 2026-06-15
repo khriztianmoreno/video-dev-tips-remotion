@@ -145,3 +145,5 @@ vite.config.ts.timestamp-*
 # Remotion
 src/_generated/
 out/
+
+.DS_Store

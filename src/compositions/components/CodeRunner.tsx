@@ -1,6 +1,14 @@
 import React from 'react';
 import { Highlight, themes, type Language } from 'prism-react-renderer';
-import { Img, interpolate, staticFile, useCurrentFrame, useVideoConfig } from 'remotion';
+import {
+  Audio,
+  Img,
+  OffthreadVideo,
+  interpolate,
+  staticFile,
+  useCurrentFrame,
+  useVideoConfig,
+} from 'remotion';
 import type { VideoStep } from '../../types/content';
 import type { Theme } from '../../theme';
 import type { LayoutMetrics } from '../../layout-metrics';
@@ -46,17 +54,26 @@ export const CodeRunner: React.FC<CodeRunnerProps> = ({ step, theme, metrics }) 
   const showCursor = code.length > 0 && visibleChars < code.length;
   const cursor = showCursor || cursorBlinkPhase === 0 ? '▌' : ' ';
 
-  const imageSrc = step.imageUrl
-    ? step.imageUrl.startsWith('http')
-      ? step.imageUrl
-      : staticFile(step.imageUrl)
-    : null;
-  const imageOpacity = interpolate(
+  const resolveSrc = (src: string) =>
+    src.startsWith('http') ? src : staticFile(src);
+  const imageSrc = step.imageUrl ? resolveSrc(step.imageUrl) : null;
+  const videoSrc = step.videoUrl ? resolveSrc(step.videoUrl) : null;
+  const audioSrc = step.audioUrl ? resolveSrc(step.audioUrl) : null;
+  const mediaOpacity = interpolate(
     frame,
     [TITLE_FADE_IN_FRAMES / 2, TITLE_FADE_IN_FRAMES / 2 + IMAGE_FADE_IN_FRAMES],
     [0, 1],
     { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
   );
+
+  // Ken Burns drift + optional region focus so small UI detail reads on mobile.
+  const sceneFrames = step.durationInSeconds * fps;
+  const kenBurns = interpolate(frame, [0, sceneFrames], [1, 1.06], {
+    extrapolateRight: 'clamp',
+  });
+  const imageScale = (step.imageFocus?.scale ?? 1) * kenBurns;
+  const focusX = (step.imageFocus?.x ?? 0.5) * 100;
+  const focusY = (step.imageFocus?.y ?? 0.5) * 100;
 
   const narrationStart = typewriterEnd + NARRATION_DELAY_SECS * fps;
   const narrationOpacity = interpolate(
@@ -93,7 +110,7 @@ export const CodeRunner: React.FC<CodeRunnerProps> = ({ step, theme, metrics }) 
           {step.title}
         </div>
       )}
-      {imageSrc && (
+      {(videoSrc || imageSrc) && (
         <div
           style={{
             flex: '1 1 auto',
@@ -101,21 +118,40 @@ export const CodeRunner: React.FC<CodeRunnerProps> = ({ step, theme, metrics }) 
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            opacity: imageOpacity,
+            opacity: mediaOpacity,
           }}
         >
-          <Img
-            src={imageSrc}
+          <div
             style={{
+              display: 'flex',
               maxWidth: '100%',
               maxHeight: '100%',
-              objectFit: 'contain',
+              overflow: 'hidden',
               borderRadius: metrics.codeRadius,
               border: `2px solid ${theme.brandColor}`,
             }}
-          />
+          >
+            {videoSrc ? (
+              <OffthreadVideo
+                src={videoSrc}
+                style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+              />
+            ) : (
+              <Img
+                src={imageSrc as string}
+                style={{
+                  maxWidth: '100%',
+                  maxHeight: '100%',
+                  objectFit: 'contain',
+                  transform: `scale(${imageScale})`,
+                  transformOrigin: `${focusX}% ${focusY}%`,
+                }}
+              />
+            )}
+          </div>
         </div>
       )}
+      {audioSrc && <Audio src={audioSrc} />}
       {code && (
         <Highlight
           code={visibleCode + (showCursor ? cursor : '')}

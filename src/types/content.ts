@@ -12,7 +12,22 @@ export type VideoStep = {
    * `codeSnippet` and `narrationText`; rendered fitted to the content area.
    */
   imageUrl?: string;
+  /**
+   * Optional zoom/pan applied to `imageUrl` (Ken Burns + region focus) so small
+   * UI detail is readable on mobile. `scale` is the zoom factor (e.g. 1.8) and
+   * `x`/`y` are the focus point in 0..1 (default centered).
+   */
+  imageFocus?: { scale?: number; x?: number; y?: number };
+  /**
+   * Optional screen-recording clip (path relative to `public/` or `http(s)` URL),
+   * rendered with `<OffthreadVideo>`. Takes visual priority over `imageUrl`.
+   */
+  videoUrl?: string;
   narrationText: string;
+  /**
+   * Optional voiceover audio (path relative to `public/` or `http(s)` URL).
+   * When set, the scene duration is derived from the audio length (see Root).
+   */
   audioUrl?: string;
 };
 
@@ -22,5 +37,10 @@ export type TopicMetadata = {
   category: string;
   displayTitle: string;
   theme?: Partial<Theme>;
+  /**
+   * Optional open question shown on the outro to drive comments. Falls back to a
+   * generic default when omitted.
+   */
+  ctaQuestion?: string;
   timeline: VideoStep[];
 };
