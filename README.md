@@ -155,6 +155,7 @@ type VideoStep = {
   title?: string;                // Optional sub-heading
   codeSnippet?: string;          // Optional code block (typewriter-animated)
   language?: 'typescript' | 'javascript' | 'bash';
+  imageUrl?: string;             // Optional image (public/-relative path or http(s) URL)
   narrationText: string;         // Always shown, fades in after the code
   audioUrl?: string;             // Reserved for TTS integration (not wired yet)
 };
@@ -357,6 +358,12 @@ export const data: TopicMetadata = {
 ### Brand footer
 
 `BrandFooter` renders the brand logo (Cloudinary-hosted) fixed at the bottom-right of every composition, fading in over the first 24 frames. Swap the logo URL in `src/theme.ts` (`BRAND_LOGO_URL`) if needed.
+
+### Brand outro (automatic)
+
+Every video automatically gets a closing scene inviting viewers to follow `@khriztianmoreno`. It renders with its **own** component (`OutroScene`), distinct from the regular content scenes: **no title banner, no footer**, the brand insignia centered **without a border**, and the message (`SÍGUEME PARA MÁS TIPS 💜`) below it. The title banner and footer are scoped to the content scenes only (`ShortVideoLayout` wraps them in a `<Sequence>` that ends before the outro).
+
+It is **not** stored in the content files — `Root.tsx` adds its duration via `withOutro` and `ShortVideoLayout.tsx` appends the `OutroScene` after the content, so it applies to all topics, existing and new. Edit the handle, central image, heart, copy, or duration in `src/outro.ts` — a single source of truth. Content authors should end their timeline on the topic's takeaway; the outro comes after it for free.
 
 ## Customizing visuals
 

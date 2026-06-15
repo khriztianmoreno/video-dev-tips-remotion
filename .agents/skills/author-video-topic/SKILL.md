@@ -104,6 +104,12 @@ Per scene:
 - `codeSnippet`: one idea per scene; realistic data (users, prices, orders), never
   `foo`/`bar`. Multi-line is fine when the beat is the code (e.g. the "old way").
 - `language`: `javascript` | `typescript` | `bash` (the only values the type allows).
+- `imageUrl` (optional): for tool/UI/visual topics (e.g. DevTools, a dashboard), add a
+  screenshot. It renders fitted to the scene and **coexists** with `codeSnippet` and
+  `narrationText`. Use a path relative to `public/` (download assets there) or an `http(s)`
+  URL. If you reuse third-party images, check the license and add attribution (see the
+  `devtools-network` topic's `CREDITS.md` for the CC BY pattern). Not every scene needs an
+  image — keep the hook/takeaway clean when text lands harder.
 - `narrationText`: the spoken/subtitle line for that beat — conversational, moves the story
   forward. The first hooks, the last lands the takeaway.
 - `id`: `step-1`, `step-2`, … unique within the topic.
@@ -215,6 +221,7 @@ type VideoStep = {
   title?: string;             // optional sub-heading
   codeSnippet?: string;       // code block (typewriter)
   language?: 'typescript' | 'javascript' | 'bash';
+  imageUrl?: string;          // optional image: public/-relative path or http(s) URL
   narrationText: string;      // ALWAYS present — subtitle/voice
   audioUrl?: string;          // reserved for TTS, do not use yet
 };
@@ -239,6 +246,11 @@ independent compositions in Studio (great for A/B comparisons).
 
 ## Conventions and constraints
 
+- **Do NOT add a follow/CTA/outro scene.** A brand outro ("follow `@khriztianmoreno`" with
+  the insignia image) is appended automatically to every video by the render pipeline
+  (`src/outro.ts` via `withOutro`). Your last scene must be the topic's *takeaway*, never a
+  social CTA — the outro comes after it for free. To change the handle/image/copy, edit
+  `src/outro.ts`, not the content files.
 - **Default language: Spanish.** Keep `title` and `narrationText` consistent in one language.
 - Topic `id`, folder name, and kebab-case must all match.
 - Composition id only allows `[a-zA-Z0-9-]`; the project separator is `--`.

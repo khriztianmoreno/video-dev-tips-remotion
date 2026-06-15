@@ -6,6 +6,8 @@ import { getLayoutMetrics } from '../layout-metrics';
 import { TitleBanner } from './components/TitleBanner';
 import { CodeRunner } from './components/CodeRunner';
 import { BrandFooter } from './components/BrandFooter';
+import { OutroScene } from './components/OutroScene';
+import { outroStep } from '../outro';
 
 export const ShortVideoLayout: React.FC<TopicMetadata> = ({
   displayTitle,
@@ -15,6 +17,10 @@ export const ShortVideoLayout: React.FC<TopicMetadata> = ({
   const { fps, width, height } = useVideoConfig();
   const resolvedTheme = resolveTheme(theme);
   const metrics = getLayoutMetrics(width, height);
+
+  const contentFrames =
+    timeline.reduce((acc, step) => acc + step.durationInSeconds, 0) * fps;
+  const outroFrames = outroStep.durationInSeconds * fps;
   let cursor = 0;
 
   return (
@@ -24,18 +30,26 @@ export const ShortVideoLayout: React.FC<TopicMetadata> = ({
         fontFamily: 'sans-serif',
       }}
     >
-      <TitleBanner title={displayTitle} theme={resolvedTheme} metrics={metrics} />
-      {timeline.map((step) => {
-        const from = cursor;
-        const durationInFrames = step.durationInSeconds * fps;
-        cursor += durationInFrames;
-        return (
-          <Sequence key={step.id} from={from} durationInFrames={durationInFrames}>
-            <CodeRunner step={step} theme={resolvedTheme} metrics={metrics} />
-          </Sequence>
-        );
-      })}
-      <BrandFooter metrics={metrics} />
+      {/* Content scenes: title banner + footer persist only here, not on the outro. */}
+      <Sequence durationInFrames={contentFrames}>
+        <TitleBanner title={displayTitle} theme={resolvedTheme} metrics={metrics} />
+        {timeline.map((step) => {
+          const from = cursor;
+          const durationInFrames = step.durationInSeconds * fps;
+          cursor += durationInFrames;
+          return (
+            <Sequence key={step.id} from={from} durationInFrames={durationInFrames}>
+              <CodeRunner step={step} theme={resolvedTheme} metrics={metrics} />
+            </Sequence>
+          );
+        })}
+        <BrandFooter metrics={metrics} />
+      </Sequence>
+
+      {/* Brand outro: own scene, no title banner, no footer. */}
+      <Sequence from={contentFrames} durationInFrames={outroFrames}>
+        <OutroScene theme={resolvedTheme} metrics={metrics} />
+      </Sequence>
     </AbsoluteFill>
   );
 };

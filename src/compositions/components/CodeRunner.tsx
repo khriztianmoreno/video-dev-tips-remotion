@@ -1,6 +1,6 @@
 import React from 'react';
 import { Highlight, themes, type Language } from 'prism-react-renderer';
-import { interpolate, useCurrentFrame, useVideoConfig } from 'remotion';
+import { Img, interpolate, staticFile, useCurrentFrame, useVideoConfig } from 'remotion';
 import type { VideoStep } from '../../types/content';
 import type { Theme } from '../../theme';
 import type { LayoutMetrics } from '../../layout-metrics';
@@ -16,6 +16,7 @@ const TITLE_FADE_IN_FRAMES = 12;
 const TYPEWRITER_SECS = 1.5;
 const NARRATION_DELAY_SECS = 0.4;
 const NARRATION_FADE_IN_FRAMES = 15;
+const IMAGE_FADE_IN_FRAMES = 18;
 
 export const CodeRunner: React.FC<CodeRunnerProps> = ({ step, theme, metrics }) => {
   const frame = useCurrentFrame();
@@ -44,6 +45,18 @@ export const CodeRunner: React.FC<CodeRunnerProps> = ({ step, theme, metrics }) 
   const cursorBlinkPhase = Math.floor((frame / fps) * 2) % 2;
   const showCursor = code.length > 0 && visibleChars < code.length;
   const cursor = showCursor || cursorBlinkPhase === 0 ? '▌' : ' ';
+
+  const imageSrc = step.imageUrl
+    ? step.imageUrl.startsWith('http')
+      ? step.imageUrl
+      : staticFile(step.imageUrl)
+    : null;
+  const imageOpacity = interpolate(
+    frame,
+    [TITLE_FADE_IN_FRAMES / 2, TITLE_FADE_IN_FRAMES / 2 + IMAGE_FADE_IN_FRAMES],
+    [0, 1],
+    { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
+  );
 
   const narrationStart = typewriterEnd + NARRATION_DELAY_SECS * fps;
   const narrationOpacity = interpolate(
@@ -78,6 +91,29 @@ export const CodeRunner: React.FC<CodeRunnerProps> = ({ step, theme, metrics }) 
           }}
         >
           {step.title}
+        </div>
+      )}
+      {imageSrc && (
+        <div
+          style={{
+            flex: '1 1 auto',
+            minHeight: 0,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            opacity: imageOpacity,
+          }}
+        >
+          <Img
+            src={imageSrc}
+            style={{
+              maxWidth: '100%',
+              maxHeight: '100%',
+              objectFit: 'contain',
+              borderRadius: metrics.codeRadius,
+              border: `2px solid ${theme.brandColor}`,
+            }}
+          />
         </div>
       )}
       {code && (

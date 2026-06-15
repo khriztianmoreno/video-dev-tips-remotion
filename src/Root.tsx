@@ -3,6 +3,7 @@ import { Composition } from 'remotion';
 import { ShortVideoLayout } from './compositions/ShortVideoLayout';
 import { allTopics } from './_generated/topics';
 import { formats } from './formats';
+import { withOutro } from './outro';
 
 const FPS = 30;
 
@@ -23,7 +24,7 @@ export const RemotionRoot: React.FC = () => (
             defaultProps={topic}
             calculateMetadata={({ props }) => ({
               durationInFrames:
-                props.timeline.reduce(
+                withOutro(props.timeline).reduce(
                   (acc, step) => acc + step.durationInSeconds,
                   0
                 ) * FPS,
