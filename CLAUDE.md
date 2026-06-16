@@ -34,6 +34,24 @@ When a request involves **creating or planning a video** (e.g. "make a short abo
 If a task is purely visual/engineering (e.g. "add a new output format", "fix the footer
 animation") and creates no new topic, you may go straight to `remotion-best-practices`.
 
+### Custom visual modules (project-specific, not in `remotion-best-practices`)
+
+`remotion-best-practices` is an external, hash-locked skill (`skills-lock.json`) — **do not
+edit it**. The brand-specific visual building blocks live in the repo; this is where to look
+or extend when a task touches them:
+
+- **Transitions** → `src/motion.ts` (`resolveTransition`, `TRANSITION_FRAMES`) + custom
+  presentations in `src/transitions/` (e.g. `diagonal-stinger.tsx` — the brand stinger).
+  Add a `StepTransition` value in `src/types/content.ts` and a case in `resolveTransition`.
+- **Backgrounds** → `src/backgrounds.ts` + `src/compositions/components/backgrounds/`
+  (e.g. `DiagonalLinesBackground.tsx` — the key visual). Register in `Background.tsx`.
+- **Per-step layouts** → `src/compositions/layouts/`, dispatched by `CodeRunner.tsx`.
+- **Outro / hook / music** → `src/outro.ts`, `HookScene.tsx`, `src/music.ts` + `src/audio.ts`.
+
+When adding a new transition/background/layout: extend the union in `src/types/content.ts`,
+implement the component, register it in the dispatcher, then document the new value in
+`author-video-topic`'s SKILL.md so authors know it exists.
+
 ## Project conventions (quick reference)
 
 - **Audience: intermediate web developers.** Don't explain basic syntax; spend time on the

@@ -19,7 +19,7 @@ export type StepLayout =
   | 'file-tree';
 
 /** Per-step incoming transition (applied between consecutive content scenes). */
-export type StepTransition = 'fade' | 'slide-left' | 'wipe' | 'flip';
+export type StepTransition = 'fade' | 'slide-left' | 'wipe' | 'flip' | 'stinger';
 
 export type VideoStep = {
   id: string;

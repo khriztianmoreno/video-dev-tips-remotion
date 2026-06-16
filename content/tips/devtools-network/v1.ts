@@ -27,6 +27,7 @@ export const data: TopicMetadata = {
     {
       id: "step-2",
       durationInSeconds: 6,
+      transition: "stinger",
       title: "Abre Network",
       imageUrl: "devtools-network/command-menu.png",
       codeSnippet: "// Cmd+Opt+J -> pestaña Network: graba cada request",
@@ -37,6 +38,7 @@ export const data: TopicMetadata = {
     {
       id: "step-3",
       durationInSeconds: 7,
+      transition: "stinger",
       title: "Lee el waterfall",
       imageUrl: "devtools-network/timing-waterfall.png",
       imageFocus: { scale: 1.7, x: 0.55, y: 0.45 },
@@ -50,6 +52,7 @@ export const data: TopicMetadata = {
     {
       id: "step-4",
       durationInSeconds: 7,
+      transition: "stinger",
       title: "Simula al usuario",
       imageUrl: "devtools-network/throttling.png",
       imageFocus: { scale: 1.8, x: 0.42, y: 0.28 },

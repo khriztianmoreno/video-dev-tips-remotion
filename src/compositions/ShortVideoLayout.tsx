@@ -75,7 +75,7 @@ export const ShortVideoLayout: React.FC<TopicMetadata> = ({
             return [
               <TransitionSeries.Transition
                 key={`${step.id}-trans`}
-                presentation={resolveTransition(step.transition)}
+                presentation={resolveTransition(step.transition, resolvedTheme)}
                 timing={linearTiming({ durationInFrames: TRANSITION_FRAMES })}
               />,
               stepNode,

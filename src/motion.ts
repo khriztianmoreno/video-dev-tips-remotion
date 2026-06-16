@@ -4,7 +4,9 @@ import { fade } from '@remotion/transitions/fade';
 import { slide } from '@remotion/transitions/slide';
 import { wipe } from '@remotion/transitions/wipe';
 import { flip } from '@remotion/transitions/flip';
+import { diagonalStinger } from './transitions/diagonal-stinger';
 import type { StepTransition } from './types/content';
+import type { Theme } from './theme';
 
 /**
  * Canonical spring configs. Always prefer these over ad-hoc damping/mass numbers
@@ -25,8 +27,8 @@ export const springs = {
 /** Out-expo bezier — the default easing for any continuous `interpolate`. */
 export const outExpo = Easing.bezier(0.22, 1, 0.36, 1);
 
-/** Cross-fade overlap between adjacent content scenes, in frames. */
-export const TRANSITION_FRAMES = 8;
+/** Overlap between adjacent content scenes, in frames (long enough to read a stinger). */
+export const TRANSITION_FRAMES = 20;
 
 type AnyPresentation = TransitionPresentation<Record<string, unknown>>;
 
@@ -38,7 +40,8 @@ type AnyPresentation = TransitionPresentation<Record<string, unknown>>;
  * can serve all switch arms.
  */
 export const resolveTransition = (
-  kind: StepTransition | undefined
+  kind: StepTransition | undefined,
+  theme?: Theme
 ): AnyPresentation => {
   switch (kind) {
     case 'slide-left':
@@ -47,6 +50,8 @@ export const resolveTransition = (
       return wipe() as AnyPresentation;
     case 'flip':
       return flip() as AnyPresentation;
+    case 'stinger':
+      return diagonalStinger(theme) as unknown as AnyPresentation;
     case 'fade':
     default:
       return fade() as AnyPresentation;

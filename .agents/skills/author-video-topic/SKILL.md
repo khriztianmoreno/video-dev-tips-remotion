@@ -178,12 +178,13 @@ when the tone clearly calls for it — switching every video is monotonous in it
 | `noise`                    | Gritty / vintage film-grain. Pairs with hot-takes, retro topics.                                    |
 | `grid`                     | Architectural / blueprint feel. Pairs with infra, tooling, structure topics.                        |
 | `particles`                | Playful, futuristic. Pairs with energy / cyberpunk moods (and a matching `bgMusicMood`).            |
+| `diagonal-lines`           | The khriztianmoreno key visual: flowing diagonal lines + accent streaks + soft arc + sparkles. On-brand hero look. |
 
 #### Transitions
 
 Each step has an optional `transition` field that controls how the PREVIOUS scene hands
 off to it (the first step has no incoming transition). Defaults to `fade`. Available:
-`fade` · `slide-left` · `wipe` · `flip`.
+`fade` · `slide-left` · `wipe` · `flip` · `stinger`.
 
 **Pick 1–2 kinds per video with meaning** — don't randomize:
 
@@ -191,6 +192,13 @@ off to it (the first step has no incoming transition). Defaults to `fade`. Avail
 - `slide-left` — sequential progress, "next step in the chain".
 - `flip` — alternative / opposite / a different angle (e.g. wrong → right).
 - `wipe` — resets the slate, marks a section boundary (e.g. problem block → solution block).
+- `stinger` — the **brand stinger**: a cluster of staggered translucent purple capsules
+  (rounded ends) + mint/white/orange accent streaks that wipes in to cover, then dissolves
+  to reveal the next scene (`src/transitions/diagonal-stinger.tsx`). Uses the topic's theme
+  colors. It's the loudest, most branded transition — use it for **major beat changes**
+  (e.g. setup → reveal, or between sections), not on every step. Pairs naturally with the
+  `diagonal-lines` background. Longer than the others (`TRANSITION_FRAMES`), so don't chain
+  many in a row.
 
 Three transitions of the same kind in a row is fine. Three different kinds in a row
 reads as "agent picked at random".
@@ -388,7 +396,7 @@ type StepLayout =
   | "data-viz" // reserved, not yet implemented
   | "file-tree"; // reserved, not yet implemented
 
-type StepTransition = "fade" | "slide-left" | "wipe" | "flip";
+type StepTransition = "fade" | "slide-left" | "wipe" | "flip" | "stinger";
 
 type VideoStep = {
   id: string; // unique within the topic
@@ -432,7 +440,8 @@ type TopicMetadata = {
     | "ambient-tech"
     | "synthwave-cyberpunk";
   bgMusicFile?: string; // manual override (path or URL); takes precedence over bgMusicMood
-  background?: "solid" | "gradient-drift" | "noise" | "grid" | "particles"; // default "gradient-drift"
+  background?: // default "gradient-drift"
+  "solid" | "gradient-drift" | "noise" | "grid" | "particles" | "diagonal-lines";
   timeline: VideoStep[];
 };
 ```
@@ -469,7 +478,7 @@ independent compositions in Studio (great for A/B comparisons).
 - [ ] First `VideoStep` shows the friction/pain — it does NOT repeat the hook line.
 - [ ] Last `VideoStep` lands the takeaway (often `quote-hero`).
 - [ ] **At least two layout kinds** across the timeline (unless the video has ≤ 3 steps). Don't use `code-typewriter` for every step.
-- [ ] Transitions limited to 1–2 kinds; chosen semantically (`slide-left` for chains, `flip` for opposites, `wipe` for section breaks, `fade` everywhere else).
+- [ ] Transitions limited to 1–2 kinds; chosen semantically (`slide-left` for chains, `flip` for opposites, `wipe` for section breaks, `stinger` for a major branded beat change, `fade` everywhere else). Don't overuse `stinger`.
 - [ ] `calloutToken` matches a substring that actually appears in the same step's `codeSnippet` (case-sensitive).
 - [ ] Each `durationInSeconds` fits the narration length + code typing time (not a bucket).
 - [ ] Realistic data in examples, no `foo`/`bar`; one idea per scene.

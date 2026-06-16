@@ -127,17 +127,11 @@ export const DiagonalLinesBackground: React.FC<Props> = ({ theme }) => {
 
   return (
     <AbsoluteFill style={{ backgroundColor: theme.backgroundColor }}>
-      {/* Curved arc: lighter purple lobe + thin mint edge */}
+      {/* Soft curved arc — a thin low-alpha band (the key-visual sweep), NOT a filled lobe. */}
       <div
         style={{
           ...arcBox,
-          background: `radial-gradient(circle, ${theme.brandColor}26, ${theme.brandColor}12 46%, transparent 58%)`,
-        }}
-      />
-      <div
-        style={{
-          ...arcBox,
-          background: `radial-gradient(circle, transparent 56.5%, ${theme.primaryColor}1f 58%, transparent 60%)`,
+          background: `radial-gradient(circle, transparent 55.5%, ${theme.primaryColor}12 57%, ${theme.brandColor}1c 58.5%, transparent 61%)`,
         }}
       />
 
