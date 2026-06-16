@@ -7,6 +7,7 @@ import { GradientDriftBackground } from './backgrounds/GradientDriftBackground';
 import { NoiseBackground } from './backgrounds/NoiseBackground';
 import { GridBackground } from './backgrounds/GridBackground';
 import { ParticlesBackground } from './backgrounds/ParticlesBackground';
+import { DiagonalLinesBackground } from './backgrounds/DiagonalLinesBackground';
 
 interface BackgroundProps {
   kind?: BackgroundKind;
@@ -28,6 +29,8 @@ export const Background: React.FC<BackgroundProps> = ({ kind, theme }) => {
       return <GridBackground theme={theme} />;
     case 'particles':
       return <ParticlesBackground theme={theme} />;
+    case 'diagonal-lines':
+      return <DiagonalLinesBackground theme={theme} />;
     case 'gradient-drift':
     default:
       return <GradientDriftBackground theme={theme} />;

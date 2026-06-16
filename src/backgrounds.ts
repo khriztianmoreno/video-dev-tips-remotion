@@ -3,7 +3,8 @@ export type BackgroundKind =
   | 'gradient-drift'
   | 'noise'
   | 'grid'
-  | 'particles';
+  | 'particles'
+  | 'diagonal-lines';
 
 export const DEFAULT_BACKGROUND: BackgroundKind = 'gradient-drift';
 
@@ -13,4 +14,5 @@ export const backgroundKinds: readonly BackgroundKind[] = [
   'noise',
   'grid',
   'particles',
+  'diagonal-lines',
 ] as const;

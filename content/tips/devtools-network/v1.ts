@@ -10,6 +10,7 @@ export const data: TopicMetadata = {
   category: "tips",
   displayTitle: "DevTools: Network",
   bgMusicMood: "lo-fi-hip-hop",
+  background: "diagonal-lines",
   ctaQuestion:
     "¿Cuál fue el cuello de botella más absurdo que cazaste con el Network Tab?",
   timeline: [
