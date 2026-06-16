@@ -1,4 +1,5 @@
 import type { Theme } from '../theme';
+import type { BackgroundKind } from '../backgrounds';
 
 /** Controlled vocabulary of background-music moods (mapped to Epidemic Sound genre slugs). */
 export type BgMusicMood =
@@ -76,6 +77,21 @@ export type VideoStep = {
    * source, "— me, every Tuesday").
    */
   quoteAttribution?: string;
+  /**
+   * `terminal` only: ordered list of terminal lines, revealed sequentially.
+   * Each entry can override the prompt (default `$` for commands, `#` for
+   * comments); `output` is the line body (single line, no `\n`).
+   */
+  terminalLines?: { prompt?: string; output: string }[];
+  /**
+   * `code-diff` only: the "before" snippet (left/top panel, vermilion border).
+   * Falls back to `codeSnippet` when unset.
+   */
+  codeBefore?: string;
+  /**
+   * `code-diff` only: the "after" snippet (right/bottom panel, mint border).
+   */
+  codeAfter?: string;
 };
 
 /** Optional pre-roll hook scene — first 1-2s "why should I keep watching" beat. */
@@ -119,5 +135,11 @@ export type TopicMetadata = {
    * `scripts/fetch-music.ts` skips this topic. Use to pin a specific track.
    */
   bgMusicFile?: string;
+  /**
+   * Optional atmospheric background variant rendered behind every content scene
+   * (hook and outro keep their solid background). Defaults to `gradient-drift`.
+   * Set `solid` to disable for a clean, flat look.
+   */
+  background?: BackgroundKind;
   timeline: VideoStep[];
 };

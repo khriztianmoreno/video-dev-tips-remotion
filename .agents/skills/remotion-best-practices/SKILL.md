@@ -44,6 +44,8 @@ Per-step visual templates live under `src/compositions/layouts/`:
 - `CodeTypewriterLayout.tsx` — default; typewriter code + optional image/video + narration.
 - `CodeCalloutLayout.tsx` — full code panel + mint glow highlight on `step.calloutToken`.
 - `QuoteHeroLayout.tsx` — single hero phrase, no code panel, springy `punch` entry.
+- `TerminalLayout.tsx` — CLI panel (dark bg, mint prompt, monospace), reveals `step.terminalLines` sequentially.
+- `CodeDiffLayout.tsx` — before/after panels (vermilion vs mint border) with an arrow that draws between.
 
 The dispatcher is `src/compositions/components/CodeRunner.tsx`. To add a new layout:
 
@@ -52,8 +54,25 @@ The dispatcher is `src/compositions/components/CodeRunner.tsx`. To add a new lay
 3. Create the layout component under `src/compositions/layouts/`.
 4. Register the `case` in `CodeRunner`'s switch.
 
-Layouts `code-diff`, `terminal`, `data-viz`, `file-tree` are reserved in the type but
-**not yet implemented**. Implement them following the same pattern when needed.
+Layouts `data-viz` and `file-tree` are reserved in the type but **not yet implemented**.
+Implement them following the same pattern when needed.
+
+### Atmospheric background
+
+`src/compositions/components/Background.tsx` is a dispatcher mounted as the first child
+of `ShortVideoLayout`'s root `AbsoluteFill` (bottom of z-stack). Variants live under
+`src/compositions/components/backgrounds/`:
+
+- `SolidBackground.tsx` — flat `theme.backgroundColor`.
+- `GradientDriftBackground.tsx` (default) — two radial gradients sliding in opposite directions; sine-driven.
+- `NoiseBackground.tsx` — SVG `<feTurbulence>` overlay at ~8% opacity, `mix-blend-mode: overlay`. Static texture.
+- `GridBackground.tsx` — 60px grid scrolling vertically at 18 px/s.
+- `ParticlesBackground.tsx` — 14 circles distributed via the golden angle, each on its own sine orbit.
+
+The background variant is `TopicMetadata.background` (defaults to `gradient-drift`).
+**Do not paint a solid `backgroundColor` on `ShortVideoLayout`'s root `AbsoluteFill`** —
+that would cover the Background. Hook and outro scenes intentionally paint their own
+opaque bg so the variant only reads during content scenes.
 
 ### Persistent scene chrome (inside content `<Sequence>`)
 
@@ -127,6 +146,8 @@ for any width/height-dependent value.
 | Layout dispatcher | `src/compositions/components/CodeRunner.tsx` |
 | Layout components | `src/compositions/layouts/*` |
 | Title banner / brand footer / outro / hook | `src/compositions/components/{TitleBanner,BrandFooter,OutroScene,HookScene}.tsx` |
+| Background dispatcher + variants | `src/compositions/components/Background.tsx`, `src/compositions/components/backgrounds/*` |
+| Background catalog | `src/backgrounds.ts` |
 | Responsive metrics | `src/layout-metrics.ts` |
 | Theme | `src/theme.ts` |
 | Output formats catalog | `src/formats.ts` |

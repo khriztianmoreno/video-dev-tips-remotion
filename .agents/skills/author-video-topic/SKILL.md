@@ -143,11 +143,13 @@ Every step has an optional `layout` field; the dispatcher picks the right compon
 **Mix at least two layouts per video unless it's a 3-step concept.** Using
 `code-typewriter` for every step is what reads as a slideshow.
 
-| `layout`                     | Use it when…                                                                                                | Extra fields                                                                  |
-| ---------------------------- | ----------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| `code-typewriter` (default)  | Building code progressively, demos — the canonical "watch me type this".                                    | `codeSnippet`                                                                 |
-| `code-callout`               | Explaining **what a specific token does**. Code stays fully visible; a mint glow animates onto the target.  | `codeSnippet` + `calloutToken` (substring to highlight)                       |
-| `quote-hero`                 | Hot takes, takeaways, statistics, "don't do this", landing one big idea with no code.                       | `quote` (hero phrase, falls back to `narrationText`) + optional `quoteAttribution` |
+| `layout`                    | Use it when…                                                                                               | Extra fields                                                                       |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `code-typewriter` (default) | Building code progressively, demos — the canonical "watch me type this".                                   | `codeSnippet`                                                                      |
+| `code-callout`              | Explaining **what a specific token does**. Code stays fully visible; a mint glow animates onto the target. | `codeSnippet` + `calloutToken` (substring to highlight)                            |
+| `quote-hero`                | Hot takes, takeaways, statistics, "don't do this", landing one big idea with no code.                      | `quote` (hero phrase, falls back to `narrationText`) + optional `quoteAttribution` |
+| `terminal`                  | CLI demos, shell commands, stdout / error output, install / run / test sequences.                          | `terminalLines: { prompt?: string; output: string }[]` (revealed sequentially)     |
+| `code-diff`                 | Refactors, "before vs after", clumsy way vs idiomatic way. Two panels with an arrow that draws between.    | `codeBefore` + `codeAfter` (both fall back to `codeSnippet` if missing)            |
 
 Rule of thumb:
 
@@ -155,11 +157,27 @@ Rule of thumb:
 - **Friction / problem** → `code-typewriter` with the old/clumsy way, OR `quote-hero` for a quick text-only pain framing.
 - **Reveal / mechanic** → `code-typewriter` writing the new tool.
 - **What it does** → `code-callout` on the key token (the `filter` call, the `await`, the operator).
+- **Refactor / before-after** → `code-diff` (vermilion border on the old panel, mint on the new).
+- **CLI / shell** → `terminal` (each command/output line on its own; auto prompt `$` for commands, `#` for `//`-prefixed comments).
 - **Takeaway** → `quote-hero` (lands the mental model).
 
-Layouts `code-diff`, `terminal`, `data-viz`, `file-tree` are reserved in the type but
-**not yet implemented** — don't pick them. If a beat would benefit from one, leave a TODO
-in `NOTES.md` for a future version.
+Layouts `data-viz` and `file-tree` are reserved in the type but **not yet implemented** —
+don't pick them. If a beat would benefit from one, leave a TODO in `NOTES.md` for a future
+version.
+
+#### Atmospheric background (optional)
+
+`TopicMetadata.background` picks an ambient layer rendered behind every content scene
+(hook and outro keep their solid background). Default `gradient-drift`. Only override
+when the tone clearly calls for it — switching every video is monotonous in its own way.
+
+| `background`               | Tone                                                                                                |
+| -------------------------- | --------------------------------------------------------------------------------------------------- |
+| `gradient-drift` (default) | Calm, premium, neutral. Works for almost everything.                                                |
+| `solid`                    | Editorial, clean, presentation-y. Use when code density is high and you want zero distraction.      |
+| `noise`                    | Gritty / vintage film-grain. Pairs with hot-takes, retro topics.                                    |
+| `grid`                     | Architectural / blueprint feel. Pairs with infra, tooling, structure topics.                        |
+| `particles`                | Playful, futuristic. Pairs with energy / cyberpunk moods (and a matching `bgMusicMood`).            |
 
 #### Transitions
 
@@ -365,10 +383,10 @@ type StepLayout =
   | "code-typewriter" // default
   | "code-callout"
   | "quote-hero"
-  | "code-diff"   // reserved, not yet implemented
-  | "terminal"    // reserved, not yet implemented
-  | "data-viz"    // reserved, not yet implemented
-  | "file-tree";  // reserved, not yet implemented
+  | "code-diff"
+  | "terminal"
+  | "data-viz" // reserved, not yet implemented
+  | "file-tree"; // reserved, not yet implemented
 
 type StepTransition = "fade" | "slide-left" | "wipe" | "flip";
 
@@ -388,6 +406,9 @@ type VideoStep = {
   calloutToken?: string; // for "code-callout": substring to highlight
   quote?: string; // for "quote-hero": hero phrase (falls back to narrationText)
   quoteAttribution?: string; // for "quote-hero": small attribution line
+  terminalLines?: { prompt?: string; output: string }[]; // for "terminal"
+  codeBefore?: string; // for "code-diff": left/top panel (falls back to codeSnippet)
+  codeAfter?: string; // for "code-diff": right/bottom panel
 };
 
 type Hook = {
@@ -405,8 +426,13 @@ type TopicMetadata = {
   theme?: Partial<Theme>; // optional; omit = brand defaults
   ctaQuestion?: string; // open question shown on the outro (override the default)
   hook?: Hook; // pre-roll, required for short-form retention (recommended on every video)
-  bgMusicMood?: "lo-fi-hip-hop" | "lofi-house" | "ambient-tech" | "synthwave-cyberpunk";
+  bgMusicMood?:
+    | "lo-fi-hip-hop"
+    | "lofi-house"
+    | "ambient-tech"
+    | "synthwave-cyberpunk";
   bgMusicFile?: string; // manual override (path or URL); takes precedence over bgMusicMood
+  background?: "solid" | "gradient-drift" | "noise" | "grid" | "particles"; // default "gradient-drift"
   timeline: VideoStep[];
 };
 ```

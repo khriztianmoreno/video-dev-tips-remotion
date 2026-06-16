@@ -5,6 +5,8 @@ import type { LayoutMetrics } from '../../layout-metrics';
 import { CodeTypewriterLayout } from '../layouts/CodeTypewriterLayout';
 import { CodeCalloutLayout } from '../layouts/CodeCalloutLayout';
 import { QuoteHeroLayout } from '../layouts/QuoteHeroLayout';
+import { TerminalLayout } from '../layouts/TerminalLayout';
+import { CodeDiffLayout } from '../layouts/CodeDiffLayout';
 
 interface CodeRunnerProps {
   step: VideoStep;
@@ -23,6 +25,10 @@ export const CodeRunner: React.FC<CodeRunnerProps> = (props) => {
       return <CodeCalloutLayout {...props} />;
     case 'quote-hero':
       return <QuoteHeroLayout {...props} />;
+    case 'terminal':
+      return <TerminalLayout {...props} />;
+    case 'code-diff':
+      return <CodeDiffLayout {...props} />;
     case 'code-typewriter':
     default:
       return <CodeTypewriterLayout {...props} />;

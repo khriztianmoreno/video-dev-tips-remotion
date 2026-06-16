@@ -9,6 +9,7 @@ import { CodeRunner } from './components/CodeRunner';
 import { BrandFooter } from './components/BrandFooter';
 import { OutroScene } from './components/OutroScene';
 import { HookScene } from './components/HookScene';
+import { Background } from './components/Background';
 import { outroStep } from '../outro';
 import { backgroundMusic } from '../audio';
 import { getTopicMusicFile } from '../music-resolve';
@@ -24,6 +25,7 @@ export const ShortVideoLayout: React.FC<TopicMetadata> = ({
   ctaQuestion,
   bgMusicFile,
   hook,
+  background,
   timeline,
 }) => {
   const { fps, width, height } = useVideoConfig();
@@ -49,12 +51,8 @@ export const ShortVideoLayout: React.FC<TopicMetadata> = ({
     : null;
 
   return (
-    <AbsoluteFill
-      style={{
-        backgroundColor: resolvedTheme.backgroundColor,
-        fontFamily: 'sans-serif',
-      }}
-    >
+    <AbsoluteFill style={{ fontFamily: 'sans-serif' }}>
+      <Background kind={background} theme={resolvedTheme} />
       {hook && (
         <Sequence durationInFrames={hookFrames}>
           <HookScene hook={hook} theme={resolvedTheme} metrics={metrics} />

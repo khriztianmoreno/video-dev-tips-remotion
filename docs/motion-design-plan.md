@@ -8,15 +8,15 @@ The phases are ordered by **perceptual ROI** — the early phases are what viewe
 
 ## Status overview
 
-| #   | Phase                                            | Impact | Effort | Status      |
-| --- | ------------------------------------------------ | ------ | ------ | ----------- |
-| 1   | Motion fundamentals (spring + scene transitions) | High   | M      | **Done — 2026-06-16** |
-| 2   | Layout variety (multi-layout dispatch)           | High   | L      | **In progress — dispatcher + 3 layouts shipped (2026-06-16)** |
+| #   | Phase                                            | Impact | Effort | Status                                                                         |
+| --- | ------------------------------------------------ | ------ | ------ | ------------------------------------------------------------------------------ |
+| 1   | Motion fundamentals (spring + scene transitions) | High   | M      | **Done — 2026-06-16**                                                          |
+| 2   | Layout variety (multi-layout dispatch)           | High   | L      | **In progress — 5 of 7 layouts shipped (2026-06-16)**                          |
 | 3   | Hook scene + sound design                        | High   | M      | **Scaffolding ready — hook + music wired; SFX awaits asset drop (2026-06-16)** |
-| 4   | Code-level dynamism (token highlight, morphing)  | Medium | L      | Not started |
-| 5   | Decorative / atmospheric layer                   | Medium | M      | Not started |
-| 6   | TTS narration pipeline                           | Medium | M      | Not started |
-| 7   | Long-tail polish                                 | Low    | S      | Not started |
+| 4   | Code-level dynamism (token highlight, morphing)  | Medium | L      | Not started                                                                    |
+| 5   | Decorative / atmospheric layer                   | Medium | M      | **Done — 2026-06-16**                                                          |
+| 6   | TTS narration pipeline                           | Medium | M      | Not started                                                                    |
+| 7   | Long-tail polish                                 | Low    | S      | Not started                                                                    |
 
 **Effort key:** S = 1-2h · M = 3-6h · L = 1+ day
 
@@ -104,17 +104,19 @@ The phases are ordered by **perceptual ROI** — the early phases are what viewe
 - [x] Added the layout-specific fields used by the shipped layouts:
   - `calloutToken?: string` (for `code-callout`) ✓
   - `quote?: string`, `quoteAttribution?: string` (for `quote-hero`) ✓
-  - `codeBefore?: string`, `codeAfter?: string` (for `code-diff`) — **pending layout impl**
-  - `terminalLines?: { prompt?: string; output: string }[]` (for `terminal`) — **pending**
+  - `codeBefore?: string`, `codeAfter?: string` (for `code-diff`) ✓
+  - `terminalLines?: { prompt?: string; output: string }[]` (for `terminal`) ✓
   - `dataItems?: { value: string; kept: boolean }[]` (for `data-viz`) — **pending**
   - `tree?: { path: string; highlight?: boolean }[]` (for `file-tree`) — **pending**
 - [x] Refactor `CodeRunner` into a dispatcher: it reads `step.layout` and renders one of the layout components.
 - [x] Move the current implementation into `src/compositions/layouts/CodeTypewriterLayout.tsx`.
 - [x] Implement `code-callout` (token highlight with mint glow + scale) and `quote-hero` (single huge phrase with `"…"` mint braces + optional attribution).
-- [ ] Implement remaining layouts: `code-diff`, `terminal`, `data-viz`, `file-tree`.
-- [ ] Update `author-video-topic` skill so it picks a layout per scene based on the narrative beat (hook = `quote-hero`, demo = `code-typewriter`, comparison = `code-diff`, etc.).
+- [x] Implement `terminal` (dark CLI panel, mint prompt, line-by-line reveal, blinking cursor) and `code-diff` (vermilion vs mint bordered panels with an animated arrow between).
+- [ ] Implement remaining layouts: `data-viz`, `file-tree`.
+- [x] Update `author-video-topic` skill so it picks a layout per scene based on the narrative beat (layouts table + rule-of-thumb + reserved-for-future call-out).
+- [x] First topic migrated: `tips/devtools-network/v2.ts` uses 3 layouts (typewriter + callout + quote-hero) with semantic transitions.
 
-**Landed 2026-06-16 (partial)** — Dispatcher pattern in place at `src/compositions/components/CodeRunner.tsx`. Three layouts live under `src/compositions/layouts/`. Migration of a topic to use mixed layouts and the skill update are pending. To use a layout in a step: set `layout: 'code-callout' | 'quote-hero'` (defaults to `code-typewriter`).
+**Landed 2026-06-16** — Dispatcher pattern in place at `src/compositions/components/CodeRunner.tsx`. Five layouts live under `src/compositions/layouts/`: `CodeTypewriterLayout`, `CodeCalloutLayout`, `QuoteHeroLayout`, `TerminalLayout`, `CodeDiffLayout`. Only `data-viz` and `file-tree` remain reserved. Both skills know about the new layouts; remotion-best-practices documents the file map.
 
 ### Files
 
@@ -227,12 +229,14 @@ The phases are ordered by **perceptual ROI** — the early phases are what viewe
 
 ### Tasks
 
-- [ ] Add a `Background` component at the bottom of the layout's z-index stack. Options selectable via a new optional `TopicMetadata.background?: 'solid' | 'noise' | 'gradient-drift' | 'grid' | 'particles'`. Default `'gradient-drift'`.
-- [ ] **`gradient-drift`** — two radial gradients sliding in opposite directions, blend mode `screen`, very low opacity. Cheap and looks expensive.
-- [ ] **`noise`** — `@remotion/noise` perlin field, used as a CSS `mix-blend-mode: overlay` layer at ~10% opacity.
-- [ ] **`grid`** — subtle 50px grid with `linear-gradient`, slow vertical scroll.
-- [ ] **`particles`** — 8-15 small shapes from `@remotion/shapes` drifting with sine motion, layered behind the code panel.
-- [ ] Add parallax: foreground layer (TitleBanner, BrandFooter) moves 1.0x with a mock "camera"; content moves 0.85x; background moves 0.5x. Even a static camera with subtle parallax sells depth.
+- [x] Add a `Background` component at the bottom of the layout's z-index stack. Options selectable via a new optional `TopicMetadata.background?: 'solid' | 'noise' | 'gradient-drift' | 'grid' | 'particles'`. Default `'gradient-drift'`.
+- [x] **`gradient-drift`** — two radial gradients sliding in opposite directions; sine-driven, ~15%/12% alpha. Cheap and reads as "alive".
+- [x] **`noise`** — SVG `<feTurbulence>` overlay at ~8% opacity with `mix-blend-mode: overlay`. Static texture (no `@remotion/noise` dependency needed).
+- [x] **`grid`** — 60px grid with `linear-gradient`, scrolls vertically at 18 px/s.
+- [x] **`particles`** — 14 small circles distributed via the golden angle, each on its own sine orbit. Plain `<div>` — no `@remotion/shapes` dependency.
+- [ ] Add parallax: foreground layer (TitleBanner, BrandFooter) moves 1.0x with a mock "camera"; content moves 0.85x; background moves 0.5x. **Deferred to Phase 7.**
+
+**Landed 2026-06-16** — Five variants under `src/compositions/components/backgrounds/`, dispatched from `Background.tsx`, mounted as the first child of `ShortVideoLayout`'s root `AbsoluteFill`. Hook and outro paint solid bg on top, so the variant only reads during content scenes. `TopicMetadata.background?: BackgroundKind` controls the choice; the brand-best-practices skill documents the file map and conventions. **No new dependencies** — noise uses SVG `<feTurbulence>`, particles are inline `<div>`s.
 
 ### Files
 
