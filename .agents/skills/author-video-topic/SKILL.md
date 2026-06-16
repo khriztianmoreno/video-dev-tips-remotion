@@ -19,7 +19,7 @@ about a technical topic in this project. Typical triggers:
 This skill owns the **content** phase (research → script → write the `.ts`). For
 animations, layout, or rendering, hand off to the `remotion-best-practices` skill
 (see "Hand-off" below). Together they form the full pipeline: this skill decides
-*what* the video says, `remotion-best-practices` knows *how* it renders.
+_what_ the video says, `remotion-best-practices` knows _how_ it renders.
 
 ## What it produces
 
@@ -51,7 +51,7 @@ if the folder exists (but still bump the version, don't clobber).
   - `category` → folder under `content/`. Default: `conceptos` to explain an API/concept,
     `tips` for a trick/best practice. Don't invent new categories unless asked.
   - `audience` → **default: intermediate web developers.** Calibrate depth to them: don't
-    explain syntax they know; spend the time on the *why*, trade-offs, and real use cases.
+    explain syntax they know; spend the time on the _why_, trade-offs, and real use cases.
   - `language` → **default: Spanish** (all existing content is in Spanish). Honor an
     explicit request for English or any other language.
   - `target duration` → not fixed. It emerges from the narrative (typically 20–45 s for a
@@ -61,20 +61,24 @@ if the folder exists (but still bump the version, don't clobber).
 ## Create workflow (run end-to-end)
 
 ### 1. Research the topic
+
 Use WebSearch when you need to confirm details or current use cases; combine it with your
 own knowledge. Gather:
+
 - A precise one-sentence definition.
 - 1-2 concrete, real-world use cases (avoid abstract `foo`/`bar` examples).
 - The common "gotcha" or misconception (immutability, return value, performance, etc.).
 - The minimal signature/syntax needed.
 
 ### 2. Plan the narrative FIRST (storytelling, not a feature list)
+
 Decide the **story** before any scene. The default audience is **intermediate web
 developers** — skip the absolute basics, respect their time, and earn the "aha". A good
 video is a small narrative with tension and resolution, not a mechanical list of facts.
 
 Build an arc that answers, in order:
-- **Why it's needed** — the real friction/pain a dev hits *without* it (the hook).
+
+- **Why it's needed** — the real friction/pain a dev hits _without_ it (the hook).
 - **What it is / its function** — the concept and how it actually works.
 - **What benefit it brings** — why it beats the alternative (declarative, immutable, safe…).
 - **Real use cases** — concrete, recognizable scenarios from everyday work.
@@ -82,14 +86,16 @@ Build an arc that answers, in order:
 
 Not every topic needs every beat — choose the ones that make THIS concept click and order
 them as a story (tension → resolution), not as documentation. A reliable pattern:
-*hook with the pain → show the clumsy old way → reveal the tool → land the benefit → a real
-use case → the takeaway.* Write the arc out in one or two lines before moving on.
+_hook with the pain → show the clumsy old way → reveal the tool → land the benefit → a real
+use case → the takeaway._ Write the arc out in one or two lines before moving on.
 
 ### 3. Derive scenes and pacing FROM the story (never a quota)
+
 Let the narrative decide the structure. There is **no fixed scene count and no fixed
 per-scene duration**. One beat may be a single line of narration (short); another may show
 a pain→fix contrast (longer). Map each beat to one `VideoStep`, then size it by what it
 must do:
+
 - Time to **read** the `narrationText` (Spanish ≈ 2.5–3 words/sec — count the words).
 - Plus time for the `codeSnippet` to type out and breathe (more/longer code = more time).
 - Plus a small buffer so nothing feels rushed.
@@ -100,6 +106,7 @@ A beat typically lands around **4–7 s**, but use what the content needs, not a
 series rather than rushing.
 
 Per scene:
+
 - `title`: short sub-heading (2-4 words) that names the beat, in the chosen language.
 - `codeSnippet`: one idea per scene; realistic data (users, prices, orders), never
   `foo`/`bar`. Multi-line is fine when the beat is the code (e.g. the "old way").
@@ -115,8 +122,10 @@ Per scene:
 - `id`: `step-1`, `step-2`, … unique within the topic.
 
 #### Retention & motion (short-form needs movement + a human)
+
 Static text-only scenes read as a slideshow and lose viewers in the first 2-3 s. Prefer
 motion and voice where it helps:
+
 - **Voiceover (`audioUrl`)** is the highest-impact lever — a human voice raises retention.
   When a scene has `audioUrl`, its duration is derived from the audio length automatically
   (you don't hand-set `durationInSeconds` for that scene). Suggest the user record/generate
@@ -126,34 +135,43 @@ motion and voice where it helps:
 - **`imageFocus`** zooms/pans into the relevant region of a screenshot so small UI detail is
   legible on mobile (e.g. `{ scale: 1.8, x: 0.42, y: 0.28 }`). Use it whenever a screenshot
   has tiny text/icons. A subtle Ken Burns drift is applied to every image automatically.
-- **Background music** is global (`src/audio.ts`); the user drops a low-volume track. Don't
-  set it per scene.
+- **Background music is automatic.** Every video gets music with the **default mood
+  `lo-fi-hip-hop`** (`DEFAULT_BG_MUSIC_MOOD` in `src/music.ts`). Only set `bgMusicMood` on the
+  topic to **override** the default when the tone calls for it
+  (`'lo-fi-hip-hop' | 'lofi-house' | 'ambient-tech' | 'synthwave-cyberpunk'`) — e.g. `ambient-tech`
+  for a calmer concept, `synthwave-cyberpunk` for something energetic. Each mood maps to a real
+  Epidemic Sound genre slug (`MOOD_TAXONOMY` in `src/music.ts`). Don't set music per scene. To materialize it, run
+  `pnpm fetch-music` (downloads the licensed track from Epidemic Sound into `public/music/`
+  and writes the manifest); the render then includes it automatically (per-topic track >
+  global `src/audio.ts` > none). Fetching needs an active Epidemic Sound subscription.
 
 ### 4. Format decisions
+
 Set and state explicitly: language, category, total duration (= sum of scenes), version,
 and `topic` in kebab-case (only `[a-z0-9-]`, must match the folder name and the `id` field).
 `displayTitle` may use capitals/parentheses (e.g. `Array.filter()`).
 
 ### 5. Write the file
+
 Create `content/<category>/<topic>/v1.ts` with this exact shape (3-level relative import):
 
 ```ts
-import type { TopicMetadata } from '../../../src/types/content';
+import type { TopicMetadata } from "../../../src/types/content";
 
 export const data: TopicMetadata = {
-  id: '<topic-kebab>',
-  version: 'v1',
-  category: '<category>',
-  displayTitle: '<Visible title>',
+  id: "<topic-kebab>",
+  version: "v1",
+  category: "<category>",
+  displayTitle: "<Visible title>",
   // theme is OPTIONAL — omit it to use the brand defaults
   timeline: [
     {
-      id: 'step-1',
+      id: "step-1",
       durationInSeconds: 4,
-      title: '<sub-heading>',
-      codeSnippet: '<code>',
-      language: 'javascript',
-      narrationText: '<one sentence>',
+      title: "<sub-heading>",
+      codeSnippet: "<code>",
+      language: "javascript",
+      narrationText: "<one sentence>",
     },
     // …
   ],
@@ -161,11 +179,13 @@ export const data: TopicMetadata = {
 ```
 
 ### 6. Validate and report
+
 - Run `pnpm typecheck` and fix any type error before finishing.
 - Report to the user: a research summary, the scene plan as a table, total duration, and
   the resulting composition ids
-  (`<category>--<topic>--v1--{vertical,square,landscape,portrait}`) with the render command:
+  (`<category>--<topic>--v1--{vertical,square,landscape,portrait}`) with the commands:
   ```bash
+  pnpm fetch-music                              # background music (default lo-fi-hip-hop)
   pnpm render-topic <category>--<topic>--v1
   ```
 
@@ -175,16 +195,19 @@ For an existing topic the user wants to research further and improve. Produces a
 doc **and** an improved new version.
 
 ### 1. Read what exists
+
 Read every `v*.ts` in `content/<category>/<topic>/` and the `NOTES.md` if present.
 Identify the current scenes, examples, and language so you build on them, don't repeat them.
 
 ### 2. Deepen the research
+
 Go beyond the basics already covered. Use WebSearch and your knowledge to dig into:
 edge cases, performance characteristics, common bugs/pitfalls, comparisons with
 alternatives (e.g. `filter` vs `for`/`reduce`), browser/runtime support, and idiomatic
 patterns. Prefer angles the current version does NOT already cover.
 
 ### 3. Write / update `NOTES.md`
+
 Create or update `content/<category>/<topic>/NOTES.md` as the durable research artifact.
 Suggested structure (keep it in the topic's language, Spanish by default):
 
@@ -192,19 +215,29 @@ Suggested structure (keep it in the topic's language, Spanish by default):
 # <Topic> — research notes
 
 ## Definición precisa
+
 ## Casos de uso reales
+
 ## Mecánica / firma
+
 ## Edge cases y gotchas
+
 ## Comparativas (vs. alternativas)
+
 ## Performance
+
 ## Ideas de escenas (para futuras versiones)
+
 ## Referencias
+
 - <url> — <qué aporta>
 ```
+
 This file is committed alongside the video and feeds every future version. Append, don't
 discard prior notes — mark anything corrected.
 
 ### 4. Derive the improved version
+
 Create the next version file (`v2.ts` if `v1` exists, etc.) — **never overwrite an existing
 version**. Apply the same **storytelling-first** approach as Create mode (narrative arc →
 scenes → pacing derived from the story, calibrated for intermediate web developers), and
@@ -212,13 +245,14 @@ raise the quality using the deepened research: a sharper hook, a better gotcha, 
 use cases, a clearer takeaway. Bump the `version` field to match the filename.
 
 ### 5. Validate and report
+
 - Run `pnpm typecheck`.
 - Report: what the new research added vs. the old version, a diff-style summary of scene
   changes, the path to `NOTES.md`, and the new composition ids + render command:
   ```bash
   pnpm render-topic <category>--<topic>--v2
   ```
-Both versions stay in Studio side by side for A/B comparison.
+  Both versions stay in Studio side by side for A/B comparison.
 
 ## Hand-off to `remotion-best-practices`
 
@@ -231,28 +265,29 @@ skill for that work. Don't reimplement Remotion knowledge here.
 
 ```ts
 type VideoStep = {
-  id: string;                 // unique within the topic
-  durationInSeconds: number;  // 4-6 s recommended
-  title?: string;             // optional sub-heading
-  codeSnippet?: string;       // code block (typewriter)
-  language?: 'typescript' | 'javascript' | 'bash';
-  imageUrl?: string;          // optional image: public/-relative path or http(s) URL
+  id: string; // unique within the topic
+  durationInSeconds: number; // 4-6 s recommended
+  title?: string; // optional sub-heading
+  codeSnippet?: string; // code block (typewriter)
+  language?: "typescript" | "javascript" | "bash";
+  imageUrl?: string; // optional image: public/-relative path or http(s) URL
   imageFocus?: { scale?: number; x?: number; y?: number }; // zoom/pan into a region
-  videoUrl?: string;          // optional screen recording (OffthreadVideo)
-  narrationText: string;      // ALWAYS present — subtitle/voice
-  audioUrl?: string;          // optional voiceover; sets the scene duration from its length
+  videoUrl?: string; // optional screen recording (OffthreadVideo)
+  narrationText: string; // ALWAYS present — subtitle/voice
+  audioUrl?: string; // optional voiceover; sets the scene duration from its length
 };
 
 type TopicMetadata = {
   id: string;
-  version: string;            // 'v1', 'v2', …
-  category: string;           // folder under content/
+  version: string; // 'v1', 'v2', …
+  category: string; // folder under content/
   displayTitle: string;
-  theme?: Partial<Theme>;     // optional; omit = brand defaults
-  ctaQuestion?: string;       // open question shown on the outro (override the default)
+  theme?: Partial<Theme>; // optional; omit = brand defaults
+  ctaQuestion?: string; // open question shown on the outro (override the default)
   timeline: VideoStep[];
 };
 ```
+
 Source of truth: `src/types/content.ts` and `src/theme.ts`. If they differ from this
 reference, the project files win.
 
@@ -266,7 +301,7 @@ independent compositions in Studio (great for A/B comparisons).
 
 - **Do NOT add a follow/CTA/outro scene.** A brand outro is appended automatically to every
   video by the render pipeline (`src/outro.ts` / `OutroScene`): the insignia, an open
-  question, and a follow line. Your last scene must be the topic's *takeaway*, never a social
+  question, and a follow line. Your last scene must be the topic's _takeaway_, never a social
   CTA — the outro comes after it for free. **Do** set a topic-specific `ctaQuestion` (an open
   question that invites comments, e.g. "¿Tu peor cuello de botella?"); without it a generic
   default is used. To change the handle/image/follow copy, edit `src/outro.ts`.

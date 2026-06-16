@@ -146,4 +146,7 @@ vite.config.ts.timestamp-*
 src/_generated/
 out/
 
+# Epidemic Sound — licensed audio assets (subscription-bound, do not commit/redistribute)
+public/music/
+
 .DS_Store

@@ -9,8 +9,13 @@ import { BrandFooter } from './components/BrandFooter';
 import { OutroScene } from './components/OutroScene';
 import { outroStep } from '../outro';
 import { backgroundMusic } from '../audio';
+import { getTopicMusicFile } from '../music-resolve';
+import { TOPIC_MUSIC_VOLUME } from '../music';
 
 export const ShortVideoLayout: React.FC<TopicMetadata> = ({
+  category,
+  id,
+  version,
   displayTitle,
   theme,
   ctaQuestion,
@@ -24,6 +29,16 @@ export const ShortVideoLayout: React.FC<TopicMetadata> = ({
     timeline.reduce((acc, step) => acc + step.durationInSeconds, 0) * fps;
   const outroFrames = outroStep.durationInSeconds * fps;
   let cursor = 0;
+
+  // Music precedence: per-topic (manifest) > global (src/audio.ts) > none.
+  const topicMusicFile = getTopicMusicFile(category, id, version);
+  const musicPath = topicMusicFile ?? backgroundMusic.src;
+  const musicVolume = topicMusicFile ? TOPIC_MUSIC_VOLUME : backgroundMusic.volume;
+  const musicSrc = musicPath
+    ? musicPath.startsWith('http')
+      ? musicPath
+      : staticFile(musicPath)
+    : null;
 
   return (
     <AbsoluteFill
@@ -57,17 +72,7 @@ export const ShortVideoLayout: React.FC<TopicMetadata> = ({
         />
       </Sequence>
 
-      {backgroundMusic.src && (
-        <Audio
-          src={
-            backgroundMusic.src.startsWith('http')
-              ? backgroundMusic.src
-              : staticFile(backgroundMusic.src)
-          }
-          volume={backgroundMusic.volume}
-          loop
-        />
-      )}
+      {musicSrc && <Audio src={musicSrc} volume={musicVolume} loop />}
     </AbsoluteFill>
   );
 };

@@ -1,11 +1,18 @@
-import type { Theme } from '../theme';
+import type { Theme } from "../theme";
+
+/** Controlled vocabulary of background-music moods (mapped to Epidemic Sound genre slugs). */
+export type BgMusicMood =
+  | "lo-fi-hip-hop"
+  | "lofi-house"
+  | "ambient-tech"
+  | "synthwave-cyberpunk";
 
 export type VideoStep = {
   id: string;
   durationInSeconds: number;
   title?: string;
   codeSnippet?: string;
-  language?: 'typescript' | 'javascript' | 'bash';
+  language?: "typescript" | "javascript" | "bash";
   /**
    * Optional image shown in the scene. Either a path relative to `public/`
    * (resolved with `staticFile`) or an absolute `http(s)` URL. Coexists with
@@ -42,5 +49,11 @@ export type TopicMetadata = {
    * generic default when omitted.
    */
   ctaQuestion?: string;
+  /**
+   * Optional background-music mood. The `scripts/fetch-music.ts` AOT step uses it to fetch a
+   * track from Epidemic Sound into `public/music/` and record it in the music manifest. When
+   * set, this music takes precedence over the global `src/audio.ts` track.
+   */
+  bgMusicMood?: BgMusicMood;
   timeline: VideoStep[];
 };

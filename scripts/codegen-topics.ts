@@ -1,11 +1,24 @@
 import { globSync } from 'glob';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { relative } from 'node:path';
 
 const GENERATED_DIR = 'src/_generated';
 const OUTPUT_FILE = `${GENERATED_DIR}/topics.ts`;
+const MUSIC_MANIFEST_FILE = `${GENERATED_DIR}/music-manifest.ts`;
 
 mkdirSync(GENERATED_DIR, { recursive: true });
+
+// Ensure the music manifest exists so the render import never breaks. Do NOT overwrite a
+// populated one — that is owned by scripts/fetch-music.ts.
+if (!existsSync(MUSIC_MANIFEST_FILE)) {
+  writeFileSync(
+    MUSIC_MANIFEST_FILE,
+    "// AUTO-GENERATED placeholder — populated by scripts/fetch-music.ts.\n" +
+      "import type { MusicManifest } from '../music';\n\n" +
+      'export const musicManifest: MusicManifest = {};\n'
+  );
+  console.log('[codegen] Created empty music-manifest.ts');
+}
 
 const files = globSync('content/*/*/v*.ts').sort();
 

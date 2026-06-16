@@ -20,14 +20,14 @@ Creating short technical videos by hand is repetitive: same intro, same layout, 
 
 ## Tech stack
 
-| Layer | Tool |
-|---|---|
-| Renderer | Remotion 4 |
-| Language | TypeScript (strict, `noUncheckedIndexedAccess`) |
-| Syntax highlighting | `prism-react-renderer` |
-| Fonts | `@remotion/google-fonts` |
-| Codegen runtime | `tsx` |
-| Package manager | `pnpm` |
+| Layer               | Tool                                            |
+| ------------------- | ----------------------------------------------- |
+| Renderer            | Remotion 4                                      |
+| Language            | TypeScript (strict, `noUncheckedIndexedAccess`) |
+| Syntax highlighting | `prism-react-renderer`                          |
+| Fonts               | `@remotion/google-fonts`                        |
+| Codegen runtime     | `tsx`                                           |
+| Package manager     | `pnpm`                                          |
 
 ## Project structure
 
@@ -76,14 +76,14 @@ The first time you run a render Remotion will download a headless Chromium shell
 
 ## Available scripts
 
-| Script | What it does |
-|---|---|
-| `pnpm dev` | Launches Remotion Studio at `http://localhost:3000`. Pick any composition from the sidebar to preview it. Hot-reloads on file changes. |
-| `pnpm codegen` | Regenerates `src/_generated/topics.ts` from `content/*/*/v*.ts`. Runs automatically before `dev`, `build`, `render`, and `render-topic`. |
-| `pnpm typecheck` | Runs `tsc --noEmit` on the whole project. |
-| `pnpm build` | Bundles the project for headless rendering. |
-| `pnpm render <composition-id> [output.mp4]` | Renders one specific composition (one topic in one format) to MP4. |
-| `pnpm render-topic <topic-id> [output-dir]` | Batch-renders one topic across **all four formats** to MP4 files in the given directory. |
+| Script                                      | What it does                                                                                                                             |
+| ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm dev`                                  | Launches Remotion Studio at `http://localhost:3000`. Pick any composition from the sidebar to preview it. Hot-reloads on file changes.   |
+| `pnpm codegen`                              | Regenerates `src/_generated/topics.ts` from `content/*/*/v*.ts`. Runs automatically before `dev`, `build`, `render`, and `render-topic`. |
+| `pnpm typecheck`                            | Runs `tsc --noEmit` on the whole project.                                                                                                |
+| `pnpm build`                                | Bundles the project for headless rendering.                                                                                              |
+| `pnpm render <composition-id> [output.mp4]` | Renders one specific composition (one topic in one format) to MP4.                                                                       |
+| `pnpm render-topic <topic-id> [output-dir]` | Batch-renders one topic across **all four formats** to MP4 files in the given directory.                                                 |
 
 ## Authoring with AI (skills)
 
@@ -91,13 +91,13 @@ This repo ships **agent skills** so any AI assistant (Claude Code) follows the s
 workflow when building a video. They live in `.agents/skills/` and are symlinked into
 `.claude/skills/`. `CLAUDE.md` wires them as the mandatory base for video tasks.
 
-| Skill | Phase | What it does |
-|---|---|---|
-| `author-video-topic` | **Content** | Researches a topic and writes the script. **Create mode** (new topic): generates `content/<category>/<topic>/v1.ts`. **Deepen mode** (topic exists): writes a `NOTES.md` research doc and an improved next version (`v2.ts`, …). It auto-detects which mode applies. |
-| `remotion-best-practices` | **Render / visuals** | Remotion domain knowledge — animations, layout, transitions, audio, captions, formats, rendering. |
+| Skill                     | Phase                | What it does                                                                                                                                                                                                                                                         |
+| ------------------------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `author-video-topic`      | **Content**          | Researches a topic and writes the script. **Create mode** (new topic): generates `content/<category>/<topic>/v1.ts`. **Deepen mode** (topic exists): writes a `NOTES.md` research doc and an improved next version (`v2.ts`, …). It auto-detects which mode applies. |
+| `remotion-best-practices` | **Render / visuals** | Remotion domain knowledge — animations, layout, transitions, audio, captions, formats, rendering.                                                                                                                                                                    |
 
 The intended pipeline is **content first, render second**: `author-video-topic` decides
-*what* the video says and writes the data file; `remotion-best-practices` knows *how* it
+_what_ the video says and writes the data file; `remotion-best-practices` knows _how_ it
 renders. A typical prompt:
 
 ```
@@ -122,22 +122,22 @@ hand. A "topic" is one short video. To create one:
 3. **Write `v1.ts`** that exports a `data` object conforming to `TopicMetadata`:
 
    ```ts
-   import type { TopicMetadata } from '../../../src/types/content';
+   import type { TopicMetadata } from "../../../src/types/content";
 
    export const data: TopicMetadata = {
-     id: 'my-new-topic',
-     version: 'v1',
-     category: 'conceptos',
-     displayTitle: 'My new topic',
+     id: "my-new-topic",
+     version: "v1",
+     category: "conceptos",
+     displayTitle: "My new topic",
      // theme is OPTIONAL — omit it to use the brand defaults
      timeline: [
        {
-         id: 'step-1',
+         id: "step-1",
          durationInSeconds: 5,
-         title: 'The setup',
-         codeSnippet: 'const x = 42;',
-         language: 'javascript',
-         narrationText: 'We start with a constant.',
+         title: "The setup",
+         codeSnippet: "const x = 42;",
+         language: "javascript",
+         narrationText: "We start with a constant.",
        },
        // ...more steps
      ],
@@ -150,25 +150,25 @@ hand. A "topic" is one short video. To create one:
 
 ```ts
 type VideoStep = {
-  id: string;                    // Unique within the topic
-  durationInSeconds: number;     // How long this step stays on screen
-  title?: string;                // Optional sub-heading
-  codeSnippet?: string;          // Optional code block (typewriter-animated)
-  language?: 'typescript' | 'javascript' | 'bash';
-  imageUrl?: string;             // Optional image (public/-relative path or http(s) URL)
+  id: string; // Unique within the topic
+  durationInSeconds: number; // How long this step stays on screen
+  title?: string; // Optional sub-heading
+  codeSnippet?: string; // Optional code block (typewriter-animated)
+  language?: "typescript" | "javascript" | "bash";
+  imageUrl?: string; // Optional image (public/-relative path or http(s) URL)
   imageFocus?: { scale?: number; x?: number; y?: number }; // Zoom/pan into a region
-  videoUrl?: string;             // Optional screen recording (rendered with OffthreadVideo)
-  narrationText: string;         // Always shown, fades in after the code
-  audioUrl?: string;             // Optional voiceover; scene duration follows the audio length
+  videoUrl?: string; // Optional screen recording (rendered with OffthreadVideo)
+  narrationText: string; // Always shown, fades in after the code
+  audioUrl?: string; // Optional voiceover; scene duration follows the audio length
 };
 
 type Theme = {
-  backgroundColor: string;       // Composition background
-  primaryColor: string;          // Mint accent — step titles, brace decorations
-  brandColor: string;            // Purple — title block fill, code panel border
-  codeBackground: string;        // Code panel background
-  textColor: string;             // Default text (titles, narration)
-  mutedTextColor: string;        // Reserved for secondary text
+  backgroundColor: string; // Composition background
+  primaryColor: string; // Mint accent — step titles, brace decorations
+  brandColor: string; // Purple — title block fill, code panel border
+  codeBackground: string; // Code panel background
+  textColor: string; // Default text (titles, narration)
+  mutedTextColor: string; // Reserved for secondary text
 };
 
 type TopicMetadata = {
@@ -176,8 +176,8 @@ type TopicMetadata = {
   version: string;
   category: string;
   displayTitle: string;
-  theme?: Partial<Theme>;        // Optional — any omitted field uses the brand default
-  ctaQuestion?: string;          // Optional open question shown on the outro
+  theme?: Partial<Theme>; // Optional — any omitted field uses the brand default
+  ctaQuestion?: string; // Optional open question shown on the outro
   timeline: VideoStep[];
 };
 ```
@@ -189,7 +189,7 @@ Short-form platforms reward movement and a human voice. On top of the data-drive
 - **Voiceover** — set `audioUrl` on a step (a file in `public/` or a URL). The scene's duration is then **derived from the audio length** automatically (`calculateMetadata` in `src/Root.tsx`), so narration is never cut off. You stop hand-tuning `durationInSeconds` for voiced scenes.
 - **Screen recordings** — set `videoUrl` on a step to play a real clip (`<OffthreadVideo>`) instead of a static screenshot; ideal for showing a click, a filling waterfall, or a dropdown. Duration follows the clip.
 - **Zoom / focus on screenshots** — set `imageFocus: { scale, x, y }` to zoom into the region you're explaining so small UI detail reads on mobile. Every image also gets a subtle Ken Burns drift.
-- **Background music** — configure `src/audio.ts` (`backgroundMusic.src` + `volume`). Drop a low-volume track in `public/`; it loops under the whole video. Off by default.
+- **Background music (automatic, Epidemic Sound)** — every video gets music; the default mood is `lo-fi-hip-hop` (`DEFAULT_BG_MUSIC_MOOD` in `src/music.ts`). Override per topic with `bgMusicMood` (`lo-fi-hip-hop | lofi-house | ambient-tech | synthwave-cyberpunk`); each maps to a real Epidemic Sound genre slug (`MOOD_TAXONOMY`). Run `pnpm fetch-music` to pull licensed tracks from Epidemic Sound into `public/music/` by genre filter (writes the manifest); the render includes them automatically (per-topic > global `src/audio.ts` > none). Requires an active Epidemic Sound subscription. See `docs/rfc/RFC-002-epidemic-sound-music.md`.
 - **Engagement CTA** — the outro shows an open question to spark comments. Set `ctaQuestion` per topic; otherwise a generic default is used.
 
 ## Versioning topics
@@ -206,12 +206,12 @@ Bump `version: 'v2'` inside the new file and edit freely. Both `v1` and `v2` sho
 
 Every topic is emitted in **four formats** out of the box. The layout adapts to each canvas via responsive metrics in `src/layout-metrics.ts`.
 
-| Format id | Aspect | Resolution | Composition id suffix | Typical use |
-|---|---|---|---|---|
-| `vertical` | 9:16 | 1080×1920 | `…--vertical` | TikTok, Instagram Reels/Stories, YouTube Shorts |
-| `square` | 1:1 | 1080×1080 | `…--square` | Instagram feed, LinkedIn, Facebook posts |
-| `landscape` | 16:9 | 1920×1080 | `…--landscape` | YouTube, Twitter/X, LinkedIn video, web embeds |
-| `portrait` | 4:5 | 1080×1350 | `…--portrait` | Instagram feed (taller crop), Pinterest |
+| Format id   | Aspect | Resolution | Composition id suffix | Typical use                                     |
+| ----------- | ------ | ---------- | --------------------- | ----------------------------------------------- |
+| `vertical`  | 9:16   | 1080×1920  | `…--vertical`         | TikTok, Instagram Reels/Stories, YouTube Shorts |
+| `square`    | 1:1    | 1080×1080  | `…--square`           | Instagram feed, LinkedIn, Facebook posts        |
+| `landscape` | 16:9   | 1920×1080  | `…--landscape`        | YouTube, Twitter/X, LinkedIn video, web embeds  |
+| `portrait`  | 4:5    | 1080×1350  | `…--portrait`         | Instagram feed (taller crop), Pinterest         |
 
 So `conceptos--array-filter--v1` becomes four compositions in the Studio sidebar:
 
@@ -299,13 +299,13 @@ pnpm render-topic conceptos--array-filter--v1 out/april-batch
 
 ### Output details
 
-| Setting | Value | Where to change |
-|---|---|---|
-| Container / codec | MP4 / H.264 (Remotion default) | Pass `--codec` to `pnpm render` |
-| Frame rate | 30 fps | `FPS` constant in `src/Root.tsx` |
-| Image format (intra-frame) | JPEG | `Config.setVideoImageFormat` in `remotion.config.ts` |
-| Output overwrite | Allowed | `Config.setOverwriteOutput` in `remotion.config.ts` |
-| Audio | Per-step voiceover + global background music | `audioUrl` on a `VideoStep` (drives that scene's duration); `backgroundMusic` in `src/audio.ts` |
+| Setting                    | Value                                        | Where to change                                                                                 |
+| -------------------------- | -------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Container / codec          | MP4 / H.264 (Remotion default)               | Pass `--codec` to `pnpm render`                                                                 |
+| Frame rate                 | 30 fps                                       | `FPS` constant in `src/Root.tsx`                                                                |
+| Image format (intra-frame) | JPEG                                         | `Config.setVideoImageFormat` in `remotion.config.ts`                                            |
+| Output overwrite           | Allowed                                      | `Config.setOverwriteOutput` in `remotion.config.ts`                                             |
+| Audio                      | Per-step voiceover + global background music | `audioUrl` on a `VideoStep` (drives that scene's duration); `backgroundMusic` in `src/audio.ts` |
 
 The first render downloads a headless Chromium shell (~95 MB). Subsequent renders reuse it.
 
@@ -341,14 +341,14 @@ The default look is wired into `src/theme.ts` and is applied to every compositio
 
 ### Default palette
 
-| Token | Value | Where it shows up |
-|---|---|---|
-| `backgroundColor` | `#150034` | Full composition background |
-| `primaryColor` | `#00F6BB` | Mint accent — `{ … };` braces in the title banner, step titles |
-| `brandColor` | `#4B15C1` | Purple fill of the title block + border of the code panel |
-| `codeBackground` | `#0c0026` | Code panel background |
-| `textColor` | `#FFFFFF` | Title text, narration |
-| `mutedTextColor` | `#B4B3B6` | Reserved for secondary text |
+| Token             | Value     | Where it shows up                                              |
+| ----------------- | --------- | -------------------------------------------------------------- |
+| `backgroundColor` | `#150034` | Full composition background                                    |
+| `primaryColor`    | `#00F6BB` | Mint accent — `{ … };` braces in the title banner, step titles |
+| `brandColor`      | `#4B15C1` | Purple fill of the title block + border of the code panel      |
+| `codeBackground`  | `#0c0026` | Code panel background                                          |
+| `textColor`       | `#FFFFFF` | Title text, narration                                          |
+| `mutedTextColor`  | `#B4B3B6` | Reserved for secondary text                                    |
 
 These mirror the brand palette used on [khriztianmoreno.dev](https://khriztianmoreno.dev) (Russian Violet, Sea Green Crayola, Medium Blue, Gray X).
 
@@ -360,8 +360,8 @@ These mirror the brand palette used on [khriztianmoreno.dev](https://khriztianmo
 export const data: TopicMetadata = {
   // ...
   theme: {
-    backgroundColor: '#0f172a',   // override just the background
-    primaryColor: '#60a5fa',      // override just the accent
+    backgroundColor: "#0f172a", // override just the background
+    primaryColor: "#60a5fa", // override just the accent
     // brandColor, codeBackground, textColor stay at defaults
   },
   // ...

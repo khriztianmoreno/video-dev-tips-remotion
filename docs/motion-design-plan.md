@@ -8,15 +8,15 @@ The phases are ordered by **perceptual ROI** — the early phases are what viewe
 
 ## Status overview
 
-| # | Phase | Impact | Effort | Status |
-|---|---|---|---|---|
-| 1 | Motion fundamentals (spring + scene transitions) | High | M | Not started |
-| 2 | Layout variety (multi-layout dispatch) | High | L | Not started |
-| 3 | Hook scene + sound design | High | M | Not started |
-| 4 | Code-level dynamism (token highlight, morphing) | Medium | L | Not started |
-| 5 | Decorative / atmospheric layer | Medium | M | Not started |
-| 6 | TTS narration pipeline | Medium | M | Not started |
-| 7 | Long-tail polish | Low | S | Not started |
+| #   | Phase                                            | Impact | Effort | Status      |
+| --- | ------------------------------------------------ | ------ | ------ | ----------- |
+| 1   | Motion fundamentals (spring + scene transitions) | High   | M      | Not started |
+| 2   | Layout variety (multi-layout dispatch)           | High   | L      | Not started |
+| 3   | Hook scene + sound design                        | High   | M      | Not started |
+| 4   | Code-level dynamism (token highlight, morphing)  | Medium | L      | Not started |
+| 5   | Decorative / atmospheric layer                   | Medium | M      | Not started |
+| 6   | TTS narration pipeline                           | Medium | M      | Not started |
+| 7   | Long-tail polish                                 | Low    | S      | Not started |
 
 **Effort key:** S = 1-2h · M = 3-6h · L = 1+ day
 
@@ -80,11 +80,11 @@ The phases are ordered by **perceptual ROI** — the early phases are what viewe
 
 ## Phase 2 — Layout variety
 
-**Why this matters.** Today, `CodeRunner` is the *only* per-step layout. Every step has identical anatomy: step title at top, code panel in middle, narration at bottom. Even with perfect motion, repetition reads as "template". Multiple layouts intercut give the brain a reason to keep watching.
+**Why this matters.** Today, `CodeRunner` is the _only_ per-step layout. Every step has identical anatomy: step title at top, code panel in middle, narration at bottom. Even with perfect motion, repetition reads as "template". Multiple layouts intercut give the brain a reason to keep watching.
 
 ### New layouts to implement (priority order)
 
-1. **`code-callout`** — full snippet visible, a highlight box animates over a specific token while the narration mentions it. Best for explaining *what* a function call does.
+1. **`code-callout`** — full snippet visible, a highlight box animates over a specific token while the narration mentions it. Best for explaining _what_ a function call does.
 2. **`code-diff`** — before/after side by side (vertical stack on portrait, horizontal on landscape). Arrow or `→` animates between them. Best for refactors / improvements.
 3. **`quote-hero`** — solo huge quote, no code. For hot takes, mistakes, "don't do this", takeaway lines.
 4. **`terminal`** — black background, prompt cursor, stdout typewriter. For CLI demos, error output, command sequences.
@@ -96,13 +96,13 @@ The phases are ordered by **perceptual ROI** — the early phases are what viewe
 - [ ] Add `layout?: LayoutId` to `VideoStep`. Default `'code-typewriter'` (= current behavior). Type:
   ```ts
   type LayoutId =
-    | 'code-typewriter'
-    | 'code-callout'
-    | 'code-diff'
-    | 'quote-hero'
-    | 'terminal'
-    | 'data-viz'
-    | 'file-tree';
+    | "code-typewriter"
+    | "code-callout"
+    | "code-diff"
+    | "quote-hero"
+    | "terminal"
+    | "data-viz"
+    | "file-tree";
   ```
 - [ ] Add layout-specific fields to `VideoStep` (optional, only used by certain layouts):
   - `calloutToken?: string` (for `code-callout`)
@@ -263,7 +263,7 @@ The phases are ordered by **perceptual ROI** — the early phases are what viewe
 
 ### Tasks
 
-- [ ] Add `scripts/generate-tts.ts`: reads every `narrationText`, hits the chosen provider, writes MP3s into `public/tts/...`, patches `audioUrl` in the data file *or* relies on a deterministic naming convention so the layout can find it.
+- [ ] Add `scripts/generate-tts.ts`: reads every `narrationText`, hits the chosen provider, writes MP3s into `public/tts/...`, patches `audioUrl` in the data file _or_ relies on a deterministic naming convention so the layout can find it.
 - [ ] Add `pnpm tts <topic-id>` script.
 - [ ] In `CodeRunner`, when `step.audioUrl` is present, render `<Audio src={staticFile(step.audioUrl)} startFrom={0}>` synced to the step's sequence.
 - [ ] **Critical:** the step's `durationInSeconds` must match the audio duration. Either (a) the TTS script writes the actual duration back into the data file, or (b) `calculateMetadata` reads each audio file's duration via `@remotion/media-utils` and overrides `durationInSeconds`. Option (b) is more robust.
@@ -362,7 +362,7 @@ Quality-of-life items that don't fit in a larger phase but add up.
 1. Pick the lowest-numbered phase that's still `Not started`.
 2. Read its **Why** and **Done when** sections — don't start until you can argue why the result will matter.
 3. Walk through **Tasks** as checkboxes. Update the status in the overview table to `In progress`.
-4. When the **Done when** criteria are met, change status to `Done` and write a one-line note under the phase (e.g. *"Done 2026-07-12 — transitions used: fade + slide. Spring config landed in `src/motion.ts`."*).
+4. When the **Done when** criteria are met, change status to `Done` and write a one-line note under the phase (e.g. _"Done 2026-07-12 — transitions used: fade + slide. Spring config landed in `src/motion.ts`."_).
 5. If a phase reveals it needs to be split, split it. Don't bottle up partial wins.
 
 Don't treat the order as sacred — Phase 3 (sound) is a strong candidate to move up if a specific video needs it. Just don't skip Phase 1: every later phase benefits from springs being already in place.
