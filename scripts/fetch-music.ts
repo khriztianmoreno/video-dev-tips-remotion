@@ -199,6 +199,10 @@ async function main() {
   let failures = 0;
   for (const topic of topics) {
     const key = topicKey(topic.category, topic.id, topic.version);
+    if (topic.bgMusicFile) {
+      console.log(`↷ ${key} pinned to ${topic.bgMusicFile}. Skip.`);
+      continue;
+    }
     if (manifest[key] && !REFRESH) {
       console.log(`↷ ${key} already has music (${manifest[key].title}). Skip.`);
       continue;

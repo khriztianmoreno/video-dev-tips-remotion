@@ -55,5 +55,11 @@ export type TopicMetadata = {
    * set, this music takes precedence over the global `src/audio.ts` track.
    */
   bgMusicMood?: BgMusicMood;
+  /**
+   * Optional manual override: an exact background-music file (path relative to `public/` or
+   * an `http(s)` URL). When set it wins over `bgMusicMood`/the fetched manifest, and
+   * `scripts/fetch-music.ts` skips this topic. Use to pin a specific track.
+   */
+  bgMusicFile?: string;
   timeline: VideoStep[];
 };

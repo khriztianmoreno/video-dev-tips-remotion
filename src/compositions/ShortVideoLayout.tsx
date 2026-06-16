@@ -19,6 +19,7 @@ export const ShortVideoLayout: React.FC<TopicMetadata> = ({
   displayTitle,
   theme,
   ctaQuestion,
+  bgMusicFile,
   timeline,
 }) => {
   const { fps, width, height } = useVideoConfig();
@@ -30,8 +31,8 @@ export const ShortVideoLayout: React.FC<TopicMetadata> = ({
   const outroFrames = outroStep.durationInSeconds * fps;
   let cursor = 0;
 
-  // Music precedence: per-topic (manifest) > global (src/audio.ts) > none.
-  const topicMusicFile = getTopicMusicFile(category, id, version);
+  // Music precedence: manual bgMusicFile > per-topic (manifest) > global > none.
+  const topicMusicFile = bgMusicFile ?? getTopicMusicFile(category, id, version);
   const musicPath = topicMusicFile ?? backgroundMusic.src;
   const musicVolume = topicMusicFile ? TOPIC_MUSIC_VOLUME : backgroundMusic.volume;
   const musicSrc = musicPath
