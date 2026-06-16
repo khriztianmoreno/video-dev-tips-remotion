@@ -12,6 +12,7 @@ import type { Theme } from '../../theme';
 import type { LayoutMetrics } from '../../layout-metrics';
 import { codeFontFamily, interFontFamily } from '../../fonts';
 import { springs } from '../../motion';
+import { AnimatedBorderFrame, defaultBorderPalette } from '../components/AnimatedBorderFrame';
 
 interface CodeCalloutLayoutProps {
   step: VideoStep;
@@ -91,53 +92,56 @@ export const CodeCalloutLayout: React.FC<CodeCalloutLayoutProps> = ({
             theme={themes.vsDark}
           >
             {({ tokens, getLineProps, getTokenProps, style: themeStyle }) => (
-              <pre
-                style={{
-                  ...themeStyle,
-                  backgroundColor: theme.codeBackground,
-                  padding: metrics.codePadding,
-                  borderRadius: metrics.codeRadius,
-                  fontSize: metrics.codeFontSize,
-                  lineHeight: 1.55,
-                  fontFamily: codeFontFamily,
-                  margin: 0,
-                  overflow: 'hidden',
-                  whiteSpace: 'pre-wrap',
-                  wordBreak: 'break-word',
-                  border: `2px solid ${theme.brandColor}`,
-                }}
+              <AnimatedBorderFrame
+                colors={defaultBorderPalette(theme)}
+                borderRadius={metrics.codeRadius}
               >
-                {tokens.map((line, i) => (
-                  <div key={i} {...getLineProps({ line })}>
-                    {line.map((token, key) => {
-                      const tokenProps = getTokenProps({ token });
-                      const isCallout =
-                        !!callout && token.content.includes(callout);
-                      return (
-                        <span
-                          key={key}
-                          {...tokenProps}
-                          style={{
-                            ...tokenProps.style,
-                            display: 'inline-block',
-                            ...(isCallout && highlightSpring > 0
-                              ? {
-                                  backgroundColor: `rgba(0, 246, 187, ${0.18 * highlightSpring})`,
-                                  boxShadow: `0 0 ${24 * highlightSpring}px rgba(0, 246, 187, ${0.5 * highlightSpring})`,
-                                  borderRadius: 6,
-                                  padding: '2px 6px',
-                                  transform: `scale(${1 + 0.08 * highlightSpring})`,
-                                  color: theme.primaryColor,
-                                  fontWeight: 700,
-                                }
-                              : {}),
-                          }}
-                        />
-                      );
-                    })}
-                  </div>
-                ))}
-              </pre>
+                <pre
+                  style={{
+                    ...themeStyle,
+                    backgroundColor: theme.codeBackground,
+                    padding: metrics.codePadding,
+                    fontSize: metrics.codeFontSize,
+                    lineHeight: 1.55,
+                    fontFamily: codeFontFamily,
+                    margin: 0,
+                    whiteSpace: 'pre-wrap',
+                    wordBreak: 'break-word',
+                    flex: '1 1 auto',
+                  }}
+                >
+                  {tokens.map((line, i) => (
+                    <div key={i} {...getLineProps({ line })}>
+                      {line.map((token, key) => {
+                        const tokenProps = getTokenProps({ token });
+                        const isCallout =
+                          !!callout && token.content.includes(callout);
+                        return (
+                          <span
+                            key={key}
+                            {...tokenProps}
+                            style={{
+                              ...tokenProps.style,
+                              display: 'inline-block',
+                              ...(isCallout && highlightSpring > 0
+                                ? {
+                                    backgroundColor: `rgba(0, 246, 187, ${0.18 * highlightSpring})`,
+                                    boxShadow: `0 0 ${24 * highlightSpring}px rgba(0, 246, 187, ${0.5 * highlightSpring})`,
+                                    borderRadius: 6,
+                                    padding: '2px 6px',
+                                    transform: `scale(${1 + 0.08 * highlightSpring})`,
+                                    color: theme.primaryColor,
+                                    fontWeight: 700,
+                                  }
+                                : {}),
+                            }}
+                          />
+                        );
+                      })}
+                    </div>
+                  ))}
+                </pre>
+              </AnimatedBorderFrame>
             )}
           </Highlight>
         </div>

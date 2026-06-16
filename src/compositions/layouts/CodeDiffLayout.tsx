@@ -13,6 +13,7 @@ import type { Theme } from '../../theme';
 import type { LayoutMetrics } from '../../layout-metrics';
 import { codeFontFamily, interFontFamily } from '../../fonts';
 import { outExpo, springs } from '../../motion';
+import { AnimatedBorderFrame } from '../components/AnimatedBorderFrame';
 
 interface CodeDiffLayoutProps {
   step: VideoStep;
@@ -65,34 +66,34 @@ export const CodeDiffLayout: React.FC<CodeDiffLayoutProps> = ({
   const renderPanel = (code: string, opacity: number, accent: string) => (
     <Highlight code={code} language={language} theme={themes.vsDark}>
       {({ tokens, getLineProps, getTokenProps, style: themeStyle }) => (
-        <pre
-          style={{
-            ...themeStyle,
-            backgroundColor: theme.codeBackground,
-            padding: metrics.codePadding,
-            borderRadius: metrics.codeRadius,
-            fontSize: metrics.codeFontSize * 0.95,
-            lineHeight: 1.45,
-            fontFamily: codeFontFamily,
-            margin: 0,
-            overflow: 'hidden',
-            whiteSpace: 'pre-wrap',
-            wordBreak: 'break-word',
-            border: `2px solid ${accent}`,
-            opacity,
-            flex: '1 1 0',
-            minHeight: 0,
-            minWidth: 0,
-          }}
+        <AnimatedBorderFrame
+          colors={[accent]}
+          borderRadius={metrics.codeRadius}
+          outerStyle={{ opacity, flex: '1 1 0', minHeight: 0, minWidth: 0 }}
         >
-          {tokens.map((line, i) => (
-            <div key={i} {...getLineProps({ line })}>
-              {line.map((token, key) => (
-                <span key={key} {...getTokenProps({ token })} />
-              ))}
-            </div>
-          ))}
-        </pre>
+          <pre
+            style={{
+              ...themeStyle,
+              backgroundColor: theme.codeBackground,
+              padding: metrics.codePadding,
+              fontSize: metrics.codeFontSize * 0.95,
+              lineHeight: 1.45,
+              fontFamily: codeFontFamily,
+              margin: 0,
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word',
+              flex: '1 1 auto',
+            }}
+          >
+            {tokens.map((line, i) => (
+              <div key={i} {...getLineProps({ line })}>
+                {line.map((token, key) => (
+                  <span key={key} {...getTokenProps({ token })} />
+                ))}
+              </div>
+            ))}
+          </pre>
+        </AnimatedBorderFrame>
       )}
     </Highlight>
   );

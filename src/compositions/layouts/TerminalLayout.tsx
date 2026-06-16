@@ -11,6 +11,7 @@ import type { Theme } from '../../theme';
 import type { LayoutMetrics } from '../../layout-metrics';
 import { codeFontFamily, interFontFamily } from '../../fonts';
 import { springs } from '../../motion';
+import { AnimatedBorderFrame, defaultBorderPalette } from '../components/AnimatedBorderFrame';
 
 interface TerminalLayoutProps {
   step: VideoStep;
@@ -79,21 +80,16 @@ export const TerminalLayout: React.FC<TerminalLayoutProps> = ({
         </div>
       )}
       {audioSrc && <Audio src={audioSrc} />}
-      <div
-        style={{
+      <AnimatedBorderFrame
+        colors={defaultBorderPalette(theme)}
+        borderRadius={metrics.codeRadius}
+        outerStyle={{ flex: '1 1 auto', minHeight: 0, opacity: panelSpring }}
+        innerStyle={{
           backgroundColor: TERMINAL_BG,
-          borderRadius: metrics.codeRadius,
-          border: `2px solid ${theme.brandColor}`,
           padding: metrics.codePadding,
           fontFamily: codeFontFamily,
           fontSize: metrics.codeFontSize * 0.9,
           color: TERMINAL_TEXT,
-          opacity: panelSpring,
-          flex: '1 1 auto',
-          minHeight: 0,
-          overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column',
           gap: 8,
         }}
       >
@@ -113,7 +109,7 @@ export const TerminalLayout: React.FC<TerminalLayoutProps> = ({
             </div>
           );
         })}
-      </div>
+      </AnimatedBorderFrame>
       <div
         style={{
           fontSize: metrics.narrationFontSize,
