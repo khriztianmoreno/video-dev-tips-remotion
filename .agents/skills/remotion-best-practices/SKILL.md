@@ -9,6 +9,132 @@ metadata:
 
 Use this skills whenever you are dealing with Remotion code to obtain the domain-specific knowledge.
 
+## Project conventions (video-dev-tips-remotion)
+
+**Read this section before writing any new animation, layout, transition, or composition
+in this repo.** The project already has its own motion language and component architecture.
+Reuse the existing primitives — don't reintroduce ad-hoc patterns. This section overrides
+the generic Remotion guidance below where they disagree.
+
+### Motion language (`src/motion.ts`)
+
+- `springs.{enter, enterSubtle, punch, settle}` — canonical `spring()` configs:
+  - `enter` — default entry for content (title, code, narration).
+  - `enterSubtle` — critical-path entries that should not steal attention.
+  - `punch` — hooks, hot-takes, takeaways. Loud overshoot, lands fast.
+  - `settle` — idle micro-motion / breathing.
+- `outExpo` = `Easing.bezier(0.22, 1, 0.36, 1)`. Default easing for any continuous
+  `interpolate` in this project.
+- `TRANSITION_FRAMES = 8` — cross-fade overlap between adjacent content scenes. Match
+  this when computing duration adjustments; `Root.tsx`/`calculateMetadata` already
+  subtracts `(N-1) * TRANSITION_FRAMES` from the total.
+- `resolveTransition(kind)` — maps `StepTransition` (`fade`/`slide-left`/`wipe`/`flip`)
+  to a Remotion `TransitionPresentation`. Use this — do **not** import presentations
+  from `@remotion/transitions/*` elsewhere.
+
+**Forbidden:** linear `interpolate(frame, [0, N], [0, 1])` for entry animations.
+Replace with `spring({ frame, fps, config: springs.enter })`. Linear `interpolate` is
+allowed only for continuous drives (typewriter progress, Ken Burns, opacity tracks
+chained to a time offset) and even there should pass `easing: outExpo`.
+
+### Layout dispatcher
+
+Per-step visual templates live under `src/compositions/layouts/`:
+
+- `CodeTypewriterLayout.tsx` — default; typewriter code + optional image/video + narration.
+- `CodeCalloutLayout.tsx` — full code panel + mint glow highlight on `step.calloutToken`.
+- `QuoteHeroLayout.tsx` — single hero phrase, no code panel, springy `punch` entry.
+
+The dispatcher is `src/compositions/components/CodeRunner.tsx`. To add a new layout:
+
+1. Add the value to `StepLayout` in `src/types/content.ts`.
+2. Add any layout-specific fields to `VideoStep` (optional).
+3. Create the layout component under `src/compositions/layouts/`.
+4. Register the `case` in `CodeRunner`'s switch.
+
+Layouts `code-diff`, `terminal`, `data-viz`, `file-tree` are reserved in the type but
+**not yet implemented**. Implement them following the same pattern when needed.
+
+### Persistent scene chrome (inside content `<Sequence>`)
+
+- `TitleBanner` — `{ Title };` block at the top. Springs in (`springs.enter`).
+- `BrandFooter` — bottom-right Cloudinary logo. Springs in (`springs.enterSubtle`).
+
+Both render alongside the `<TransitionSeries>`, not inside it, so they persist across
+all content scenes.
+
+### Independent scenes (own `<Sequence>`s in `ShortVideoLayout`)
+
+- `HookScene` — pre-roll fed by `TopicMetadata.hook`. Renders BEFORE the title banner.
+  No title banner, no footer.
+- `OutroScene` — appended automatically by the render pipeline (`src/outro.ts`,
+  `withOutro`). No title banner, no footer. Edit the social handle / image / heart /
+  follow copy in `src/outro.ts` — don't reimplement.
+
+### Audio plumbing (already wired)
+
+- **Background music** precedence: `bgMusicFile > per-topic manifest (bgMusicMood) > global (src/audio.ts) > none`. Resolved in `ShortVideoLayout`. Do not mount a second `<Audio>` for BG music.
+- **SFX**: `src/sfx.ts` exports typed paths under `public/sfx/`. Wire `<Audio>` for SFX
+  only AFTER the asset files exist (otherwise renders 404). `public/sfx/README.md` lists
+  the expected files and free sources.
+- **Per-step voiceover**: `step.audioUrl`. When set, `calculateMetadata` derives the
+  scene duration from the audio length via `@remotion/media-utils`. Don't hand-tune
+  `durationInSeconds` for those scenes.
+
+### Responsive sizing
+
+`src/layout-metrics.ts` exports `getLayoutMetrics(width, height)` → a `LayoutMetrics`
+object. Every layout component receives `metrics: LayoutMetrics` and uses it for fonts,
+paddings, gaps, radii. **No hardcoded pixel sizes** for typography or spacing in layout
+components — would break the square/landscape/portrait variants emitted by
+`src/Root.tsx`.
+
+### Theme
+
+`src/theme.ts` exports `defaultTheme` (brand palette) + `resolveTheme(override)`.
+`TopicMetadata.theme?: Partial<Theme>` allows per-topic overrides.
+
+### Transitions
+
+Content scenes are wrapped in `<TransitionSeries>` inside `ShortVideoLayout`. Each step's
+incoming transition is `step.transition` resolved via `resolveTransition()`. **Do not add
+cross-fades manually with `interpolate`** between scenes — use the existing wrapper.
+
+### Composition multiplexing
+
+`src/Root.tsx` emits `topics × formats` (4 formats per topic: vertical, square,
+landscape, portrait). All sizing must be format-agnostic — rely on `getLayoutMetrics()`
+for any width/height-dependent value.
+
+### What NOT to do
+
+- Don't add new linear `interpolate(frame, [0, N], [0, 1])` for entries — use `spring`.
+- Don't import presentation factories (`@remotion/transitions/fade`, `/slide`, …)
+  outside `src/motion.ts`. Go through `resolveTransition`.
+- Don't reinvent the outro, hook, brand footer, or title banner.
+- Don't hardcode dimensions in a layout — use `getLayoutMetrics`.
+- Don't write to `src/_generated/` (codegen artifact, gitignored).
+- Don't add background music wiring per-step or per-component — it's already mounted in
+  `ShortVideoLayout`.
+- Don't mount `<Audio>` for SFX files that haven't been dropped in `public/sfx/` —
+  renders will 404. Add the wire only after the asset lands.
+
+### Where to look (file map)
+
+| What | File |
+|---|---|
+| Spring configs, easing, transition resolver | `src/motion.ts` |
+| Layout dispatcher | `src/compositions/components/CodeRunner.tsx` |
+| Layout components | `src/compositions/layouts/*` |
+| Title banner / brand footer / outro / hook | `src/compositions/components/{TitleBanner,BrandFooter,OutroScene,HookScene}.tsx` |
+| Responsive metrics | `src/layout-metrics.ts` |
+| Theme | `src/theme.ts` |
+| Output formats catalog | `src/formats.ts` |
+| Music resolution | `src/music.ts`, `src/music-resolve.ts`, `src/audio.ts` |
+| SFX catalog | `src/sfx.ts` |
+| Types | `src/types/content.ts` |
+| Root + `calculateMetadata` | `src/Root.tsx` |
+
 ## New project setup
 
 When in an empty folder or workspace with no existing Remotion project, scaffold one using:

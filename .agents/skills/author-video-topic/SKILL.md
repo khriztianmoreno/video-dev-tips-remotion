@@ -78,16 +78,18 @@ video is a small narrative with tension and resolution, not a mechanical list of
 
 Build an arc that answers, in order:
 
-- **Why it's needed** — the real friction/pain a dev hits _without_ it (the hook).
+- **Pre-roll hook** (`TopicMetadata.hook`, a dedicated 1.2–2 s scene before the title) — a punchline / hot take / question that earns the first 2 seconds on a vertical feed. Mandatory for short-form retention. See "Pre-roll hook" below.
+- **Why it's needed** — the real friction/pain a dev hits _without_ it.
 - **What it is / its function** — the concept and how it actually works.
 - **What benefit it brings** — why it beats the alternative (declarative, immutable, safe…).
 - **Real use cases** — concrete, recognizable scenarios from everyday work.
 - **Takeaway** — the mental model they keep.
 
-Not every topic needs every beat — choose the ones that make THIS concept click and order
-them as a story (tension → resolution), not as documentation. A reliable pattern:
-_hook with the pain → show the clumsy old way → reveal the tool → land the benefit → a real
-use case → the takeaway._ Write the arc out in one or two lines before moving on.
+Not every topic needs every body beat (the pre-roll hook IS required) — choose the ones
+that make THIS concept click and order them as a story (tension → resolution), not as
+documentation. A reliable pattern: _pre-roll hook → show the clumsy old way → reveal the
+tool → land the benefit → a real use case → the takeaway._ Write the arc out in one or two
+lines before moving on.
 
 ### 3. Derive scenes and pacing FROM the story (never a quota)
 
@@ -102,10 +104,80 @@ must do:
 
 A beat typically lands around **4–7 s**, but use what the content needs, not a bucket.
 **Total length follows the story:** storytelling concept explainers usually run **20–45 s**
-(platform ceiling ~60 s). If it can't be told well under ~60 s, propose splitting into a
-series rather than rushing.
+including the ~1.5 s pre-roll hook (platform ceiling ~60 s). If it can't be told well under
+~60 s, propose splitting into a series rather than rushing.
 
-Per scene:
+#### Pre-roll hook (required)
+
+A 1.2–2 s scene that plays BEFORE the title banner — a punchline, hot take, shocking stat,
+or rhetorical question. This is what earns the first 2 seconds on TikTok/Reels/Shorts;
+without it the title-banner intro reads as "another tutorial" and viewers swipe.
+
+Set `TopicMetadata.hook` (NOT a `VideoStep`):
+
+```ts
+hook: {
+  durationInSeconds: 1.5,
+  text: "El 90% lo hace mal",       // ≤ 7 words ideal
+  subtext: "filter no muta",         // optional smaller kicker
+  variant: "shock",                  // "shock" | "question" | "mistake"
+},
+```
+
+Pick the variant by tone:
+
+- **`shock`** (default) — mint accent. Hot takes, counterintuitive facts, surprising
+  stats. Example: `"Esto rompe en producción"`.
+- **`question`** — mint with `?` motif. Rhetorical questions the video then answers.
+  Example: `"¿Por qué tu loop es lento?"`.
+- **`mistake`** — vermilion `×` prefix. Common errors / "no hagas esto" / anti-patterns.
+  Example: `"forEach para esto, NO"`.
+
+Keep the hook independent of the timeline narrative — it's a teaser, not step 0 of the
+explanation. The first `VideoStep` must NOT repeat the hook; it picks up the story (the
+"friction" beat).
+
+#### Layout selection per beat
+
+Every step has an optional `layout` field; the dispatcher picks the right component.
+**Mix at least two layouts per video unless it's a 3-step concept.** Using
+`code-typewriter` for every step is what reads as a slideshow.
+
+| `layout`                     | Use it when…                                                                                                | Extra fields                                                                  |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `code-typewriter` (default)  | Building code progressively, demos — the canonical "watch me type this".                                    | `codeSnippet`                                                                 |
+| `code-callout`               | Explaining **what a specific token does**. Code stays fully visible; a mint glow animates onto the target.  | `codeSnippet` + `calloutToken` (substring to highlight)                       |
+| `quote-hero`                 | Hot takes, takeaways, statistics, "don't do this", landing one big idea with no code.                       | `quote` (hero phrase, falls back to `narrationText`) + optional `quoteAttribution` |
+
+Rule of thumb:
+
+- **Pre-roll hook** → handled separately (`TopicMetadata.hook`), not a layout.
+- **Friction / problem** → `code-typewriter` with the old/clumsy way, OR `quote-hero` for a quick text-only pain framing.
+- **Reveal / mechanic** → `code-typewriter` writing the new tool.
+- **What it does** → `code-callout` on the key token (the `filter` call, the `await`, the operator).
+- **Takeaway** → `quote-hero` (lands the mental model).
+
+Layouts `code-diff`, `terminal`, `data-viz`, `file-tree` are reserved in the type but
+**not yet implemented** — don't pick them. If a beat would benefit from one, leave a TODO
+in `NOTES.md` for a future version.
+
+#### Transitions
+
+Each step has an optional `transition` field that controls how the PREVIOUS scene hands
+off to it (the first step has no incoming transition). Defaults to `fade`. Available:
+`fade` · `slide-left` · `wipe` · `flip`.
+
+**Pick 1–2 kinds per video with meaning** — don't randomize:
+
+- `fade` — neutral continuation (most beats).
+- `slide-left` — sequential progress, "next step in the chain".
+- `flip` — alternative / opposite / a different angle (e.g. wrong → right).
+- `wipe` — resets the slate, marks a section boundary (e.g. problem block → solution block).
+
+Three transitions of the same kind in a row is fine. Three different kinds in a row
+reads as "agent picked at random".
+
+#### Per scene fields
 
 - `title`: short sub-heading (2-4 words) that names the beat, in the chosen language.
 - `codeSnippet`: one idea per scene; realistic data (users, prices, orders), never
@@ -153,7 +225,9 @@ and `topic` in kebab-case (only `[a-z0-9-]`, must match the folder name and the 
 
 ### 5. Write the file
 
-Create `content/<category>/<topic>/v1.ts` with this exact shape (3-level relative import):
+Create `content/<category>/<topic>/v1.ts` with this exact shape (3-level relative import).
+This template shows a pre-roll hook, mixed layouts, and one explicit transition — the
+canonical pattern, not all-optional decoration:
 
 ```ts
 import type { TopicMetadata } from "../../../src/types/content";
@@ -164,16 +238,39 @@ export const data: TopicMetadata = {
   category: "<category>",
   displayTitle: "<Visible title>",
   // theme is OPTIONAL — omit it to use the brand defaults
+  hook: {
+    durationInSeconds: 1.5,
+    text: "<≤ 7-word punchline>",
+    variant: "shock", // "shock" | "question" | "mistake"
+  },
   timeline: [
     {
       id: "step-1",
       durationInSeconds: 4,
       title: "<sub-heading>",
-      codeSnippet: "<code>",
+      codeSnippet: "<the clumsy / old way>",
       language: "javascript",
-      narrationText: "<one sentence>",
+      narrationText: "<friction sentence>",
+      // layout defaults to "code-typewriter"; omit unless picking a different one
     },
-    // …
+    {
+      id: "step-2",
+      durationInSeconds: 5,
+      title: "<sub-heading>",
+      codeSnippet: "ages.filter(age => age >= 18)",
+      language: "javascript",
+      narrationText: "<what the new tool does>",
+      layout: "code-callout",
+      calloutToken: "filter",
+      transition: "slide-left",
+    },
+    {
+      id: "step-3",
+      durationInSeconds: 4,
+      narrationText: "<takeaway as one sentence>",
+      layout: "quote-hero",
+      quote: "<distilled mental model, ≤ 8 words>",
+    },
   ],
 };
 ```
@@ -264,17 +361,40 @@ skill for that work. Don't reimplement Remotion knowledge here.
 ## Type contract (reference)
 
 ```ts
+type StepLayout =
+  | "code-typewriter" // default
+  | "code-callout"
+  | "quote-hero"
+  | "code-diff"   // reserved, not yet implemented
+  | "terminal"    // reserved, not yet implemented
+  | "data-viz"    // reserved, not yet implemented
+  | "file-tree";  // reserved, not yet implemented
+
+type StepTransition = "fade" | "slide-left" | "wipe" | "flip";
+
 type VideoStep = {
   id: string; // unique within the topic
-  durationInSeconds: number; // 4-6 s recommended
+  durationInSeconds: number;
   title?: string; // optional sub-heading
-  codeSnippet?: string; // code block (typewriter)
+  codeSnippet?: string; // code block (typewriter or full-render depending on layout)
   language?: "typescript" | "javascript" | "bash";
   imageUrl?: string; // optional image: public/-relative path or http(s) URL
   imageFocus?: { scale?: number; x?: number; y?: number }; // zoom/pan into a region
   videoUrl?: string; // optional screen recording (OffthreadVideo)
   narrationText: string; // ALWAYS present — subtitle/voice
   audioUrl?: string; // optional voiceover; sets the scene duration from its length
+  layout?: StepLayout; // default "code-typewriter"
+  transition?: StepTransition; // incoming transition; default "fade"; first step ignores it
+  calloutToken?: string; // for "code-callout": substring to highlight
+  quote?: string; // for "quote-hero": hero phrase (falls back to narrationText)
+  quoteAttribution?: string; // for "quote-hero": small attribution line
+};
+
+type Hook = {
+  durationInSeconds: number; // 1.2-2 s recommended
+  text: string;
+  subtext?: string;
+  variant?: "shock" | "question" | "mistake"; // default "shock"
 };
 
 type TopicMetadata = {
@@ -284,6 +404,9 @@ type TopicMetadata = {
   displayTitle: string;
   theme?: Partial<Theme>; // optional; omit = brand defaults
   ctaQuestion?: string; // open question shown on the outro (override the default)
+  hook?: Hook; // pre-roll, required for short-form retention (recommended on every video)
+  bgMusicMood?: "lo-fi-hip-hop" | "lofi-house" | "ambient-tech" | "synthwave-cyberpunk";
+  bgMusicFile?: string; // manual override (path or URL); takes precedence over bgMusicMood
   timeline: VideoStep[];
 };
 ```
@@ -315,12 +438,15 @@ independent compositions in Studio (great for A/B comparisons).
 ## Quality checklist (before finishing)
 
 - [ ] Wrote the narrative arc first; scene count and durations come FROM the story (no quota).
-- [ ] Arc covers why it's needed → function → benefit → real use case → takeaway (the beats
-      that fit this topic), calibrated for intermediate web developers.
-- [ ] First scene hooks with a real pain; last scene lands the takeaway.
+- [ ] Arc covers pre-roll hook → why it's needed → function → benefit → real use case → takeaway (the beats that fit this topic), calibrated for intermediate web developers.
+- [ ] `hook` is set (≤ 7-word `text`, 1.2–2 s, `variant` matches the tone).
+- [ ] First `VideoStep` shows the friction/pain — it does NOT repeat the hook line.
+- [ ] Last `VideoStep` lands the takeaway (often `quote-hero`).
+- [ ] **At least two layout kinds** across the timeline (unless the video has ≤ 3 steps). Don't use `code-typewriter` for every step.
+- [ ] Transitions limited to 1–2 kinds; chosen semantically (`slide-left` for chains, `flip` for opposites, `wipe` for section breaks, `fade` everywhere else).
+- [ ] `calloutToken` matches a substring that actually appears in the same step's `codeSnippet` (case-sensitive).
 - [ ] Each `durationInSeconds` fits the narration length + code typing time (not a bucket).
 - [ ] Realistic data in examples, no `foo`/`bar`; one idea per scene.
 - [ ] `pnpm typecheck` passes.
 - [ ] Reported plan + composition ids + render command.
-- [ ] **Deepen mode only:** wrote/updated `NOTES.md`, created a NEW version (didn't
-      overwrite), and the new research actually adds beyond the previous version.
+- [ ] **Deepen mode only:** wrote/updated `NOTES.md`, created a NEW version (didn't overwrite), and the new research actually adds beyond the previous version.

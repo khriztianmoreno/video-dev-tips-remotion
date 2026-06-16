@@ -1,9 +1,9 @@
 import React from 'react';
-import { Img, interpolate, useCurrentFrame } from 'remotion';
+import { Img, spring, useCurrentFrame, useVideoConfig } from 'remotion';
 import type { LayoutMetrics } from '../../layout-metrics';
 import { BRAND_LOGO_URL } from '../../theme';
+import { springs } from '../../motion';
 
-const FADE_IN_FRAMES = 24;
 const TARGET_OPACITY = 0.95;
 
 interface BrandFooterProps {
@@ -12,9 +12,8 @@ interface BrandFooterProps {
 
 export const BrandFooter: React.FC<BrandFooterProps> = ({ metrics }) => {
   const frame = useCurrentFrame();
-  const opacity = interpolate(frame, [0, FADE_IN_FRAMES], [0, TARGET_OPACITY], {
-    extrapolateRight: 'clamp',
-  });
+  const { fps } = useVideoConfig();
+  const enter = spring({ frame, fps, config: springs.enterSubtle });
 
   return (
     <div
@@ -22,7 +21,7 @@ export const BrandFooter: React.FC<BrandFooterProps> = ({ metrics }) => {
         position: 'absolute',
         bottom: metrics.footerOffset,
         right: metrics.footerOffset,
-        opacity,
+        opacity: enter * TARGET_OPACITY,
       }}
     >
       <Img

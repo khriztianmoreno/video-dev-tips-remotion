@@ -10,9 +10,9 @@ The phases are ordered by **perceptual ROI** — the early phases are what viewe
 
 | #   | Phase                                            | Impact | Effort | Status      |
 | --- | ------------------------------------------------ | ------ | ------ | ----------- |
-| 1   | Motion fundamentals (spring + scene transitions) | High   | M      | Not started |
-| 2   | Layout variety (multi-layout dispatch)           | High   | L      | Not started |
-| 3   | Hook scene + sound design                        | High   | M      | Not started |
+| 1   | Motion fundamentals (spring + scene transitions) | High   | M      | **Done — 2026-06-16** |
+| 2   | Layout variety (multi-layout dispatch)           | High   | L      | **In progress — dispatcher + 3 layouts shipped (2026-06-16)** |
+| 3   | Hook scene + sound design                        | High   | M      | **Scaffolding ready — hook + music wired; SFX awaits asset drop (2026-06-16)** |
 | 4   | Code-level dynamism (token highlight, morphing)  | Medium | L      | Not started |
 | 5   | Decorative / atmospheric layer                   | Medium | M      | Not started |
 | 6   | TTS narration pipeline                           | Medium | M      | Not started |
@@ -40,17 +40,14 @@ The phases are ordered by **perceptual ROI** — the early phases are what viewe
 
 ### Tasks
 
-- [ ] Audit every `interpolate(frame, [a, b], [0, 1])` for entrance animations. Replace with `spring({ frame, fps, config })`.
-- [ ] Keep `interpolate` only for: typewriter progress, narration timing offsets, and continuous drives. For those, add `easing: Easing.bezier(0.22, 1, 0.36, 1)` (out-expo).
-- [ ] Centralize spring configs in `src/motion.ts`:
-  ```ts
-  export const enter = { damping: 14, mass: 0.6, stiffness: 100 };
-  export const enterSubtle = { damping: 20, mass: 0.8, stiffness: 120 };
-  export const punch = { damping: 8, mass: 0.4, stiffness: 200 };
-  ```
-- [ ] `pnpm add @remotion/transitions`.
-- [ ] Wrap the `timeline.map(<Sequence>...)` in `ShortVideoLayout` with `<TransitionSeries>`. Default transition `fade` of 8 frames. Allow per-step override via a new optional `VideoStep.transition?: 'fade' | 'slide-left' | 'wipe' | 'flip'`.
-- [ ] Add a `transition` field to the `VideoStep` type; default to `'fade'`. Pick 2-3 transition kinds at most across one video — using a different one every step is just as monotonous as none.
+- [x] Audit every `interpolate(frame, [a, b], [0, 1])` for entrance animations. Replace with `spring({ frame, fps, config })`.
+- [x] Keep `interpolate` only for: typewriter progress, narration timing offsets, and continuous drives. For those, add `easing: Easing.bezier(0.22, 1, 0.36, 1)` (out-expo).
+- [x] Centralize spring configs in `src/motion.ts` (added a fourth: `settle` for idle micro-motion).
+- [x] `pnpm add @remotion/transitions`.
+- [x] Wrap the `timeline.map(<Sequence>...)` in `ShortVideoLayout` with `<TransitionSeries>`. Default `fade` of 8 frames; `calculateMetadata` subtracts the overlap from total duration.
+- [x] Add a `transition?: StepTransition` field to `VideoStep` (values: `fade` · `slide-left` · `wipe` · `flip`).
+
+**Landed 2026-06-16** — Motion language is now spring-first. `src/motion.ts` exports `springs.{enter,enterSubtle,punch,settle}`, `outExpo`, `TRANSITION_FRAMES`, and `resolveTransition()` that maps `StepTransition` → `TransitionPresentation`. `TitleBanner`, `BrandFooter`, `CodeTypewriterLayout`, `CodeCalloutLayout`, `QuoteHeroLayout`, `HookScene`, and `OutroScene` all enter via spring. `ShortVideoLayout` wraps content steps in `<TransitionSeries>`; `Root.tsx` `calculateMetadata` accounts for both transition overlap and the optional hook scene.
 
 ### Files
 
@@ -93,7 +90,7 @@ The phases are ordered by **perceptual ROI** — the early phases are what viewe
 
 ### Tasks
 
-- [ ] Add `layout?: LayoutId` to `VideoStep`. Default `'code-typewriter'` (= current behavior). Type:
+- [x] Add `layout?: LayoutId` to `VideoStep`. Default `'code-typewriter'` (= current behavior). Type:
   ```ts
   type LayoutId =
     | "code-typewriter"
@@ -104,17 +101,20 @@ The phases are ordered by **perceptual ROI** — the early phases are what viewe
     | "data-viz"
     | "file-tree";
   ```
-- [ ] Add layout-specific fields to `VideoStep` (optional, only used by certain layouts):
-  - `calloutToken?: string` (for `code-callout`)
-  - `codeBefore?: string`, `codeAfter?: string` (for `code-diff`)
-  - `quote?: string`, `quoteAttribution?: string` (for `quote-hero`)
-  - `terminalLines?: { prompt?: string; output: string }[]` (for `terminal`)
-  - `dataItems?: { value: string; kept: boolean }[]` (for `data-viz`)
-  - `tree?: { path: string; highlight?: boolean }[]` (for `file-tree`)
-- [ ] Refactor `CodeRunner` into a dispatcher: it reads `step.layout` and renders one of the layout components.
-- [ ] Move the current implementation into `src/compositions/layouts/CodeTypewriterLayout.tsx`.
-- [ ] Implement the new layouts as separate components under `src/compositions/layouts/`. Start with `code-callout` and `quote-hero` — those are the two with the highest visual contrast vs the existing one.
+- [x] Added the layout-specific fields used by the shipped layouts:
+  - `calloutToken?: string` (for `code-callout`) ✓
+  - `quote?: string`, `quoteAttribution?: string` (for `quote-hero`) ✓
+  - `codeBefore?: string`, `codeAfter?: string` (for `code-diff`) — **pending layout impl**
+  - `terminalLines?: { prompt?: string; output: string }[]` (for `terminal`) — **pending**
+  - `dataItems?: { value: string; kept: boolean }[]` (for `data-viz`) — **pending**
+  - `tree?: { path: string; highlight?: boolean }[]` (for `file-tree`) — **pending**
+- [x] Refactor `CodeRunner` into a dispatcher: it reads `step.layout` and renders one of the layout components.
+- [x] Move the current implementation into `src/compositions/layouts/CodeTypewriterLayout.tsx`.
+- [x] Implement `code-callout` (token highlight with mint glow + scale) and `quote-hero` (single huge phrase with `"…"` mint braces + optional attribution).
+- [ ] Implement remaining layouts: `code-diff`, `terminal`, `data-viz`, `file-tree`.
 - [ ] Update `author-video-topic` skill so it picks a layout per scene based on the narrative beat (hook = `quote-hero`, demo = `code-typewriter`, comparison = `code-diff`, etc.).
+
+**Landed 2026-06-16 (partial)** — Dispatcher pattern in place at `src/compositions/components/CodeRunner.tsx`. Three layouts live under `src/compositions/layouts/`. Migration of a topic to use mixed layouts and the skill update are pending. To use a layout in a step: set `layout: 'code-callout' | 'quote-hero'` (defaults to `code-typewriter`).
 
 ### Files
 
@@ -147,18 +147,21 @@ The phases are ordered by **perceptual ROI** — the early phases are what viewe
 
 ### Tasks (hook)
 
-- [ ] Add a new optional `hook?: { duration: number; text: string; subtext?: string; layout?: 'shock' | 'question' | 'mistake' }` to `TopicMetadata`.
-- [ ] Render the hook as its own `<Sequence from={0} durationInFrames={...}>` before the existing content sequence.
-- [ ] Implement a `HookScene` component with a large punchy text and an entry that punches (`spring` + scale 0.7 → 1.05 → 1).
-- [ ] Skill: `author-video-topic` should plan a 1.2–2s hook for every video. The hook is the "why should I keep watching" line.
+- [x] Add a new optional `hook?: { durationInSeconds; text; subtext?; variant? }` to `TopicMetadata`. Renamed `duration` → `durationInSeconds` to match the project convention.
+- [x] Render the hook as its own `<Sequence from={0} durationInFrames={...}>` before the existing content sequence (and before `TitleBanner`).
+- [x] Implement a `HookScene` component — spring scale 0.7 → 1 punch, variant-driven accent (`shock` = mint, `question` = `?` motif, `mistake` = vermilion `×`).
+- [x] `calculateMetadata` in `Root.tsx` accounts for hook frames in the total duration.
+- [ ] Skill: `author-video-topic` should plan a 1.2–2s hook for every video.
 
 ### Tasks (audio)
 
-- [ ] Add an SFX library under `public/sfx/`. Minimum set: `whoosh.mp3`, `click.mp3`, `pop.mp3`, `success.mp3`, `error.mp3`. Source: [Mixkit free SFX](https://mixkit.co/free-sound-effects/) or [Zapsplat](https://www.zapsplat.com/).
-- [ ] Add a background music slot: `TopicMetadata.backgroundMusicUrl?: string` (or `staticFile`). Render via `<Audio volume={0.15}>` at the layout root.
-- [ ] Add per-step transition SFX: when a `<Sequence>` starts, play a `<Audio src={whoosh}>` synced to its start frame. Only on transitions that have visual motion.
+- [x] SFX scaffolding: `src/sfx.ts` exports a typed catalog; `public/sfx/README.md` documents the expected files and free sources. Drop assets there to enable.
+- [x] Background music slot: **already wired** before this phase — `src/audio.ts` (global) + `bgMusicMood`/`bgMusicFile` (per-topic) → `ShortVideoLayout` mounts `<Audio loop>` at root with precedence `bgMusicFile > manifest > global`.
+- [ ] Add per-step transition SFX: when a `<Sequence>` starts, play `<Audio src={sfx.whoosh}>` synced to its start frame. **Awaits asset drop.**
 - [ ] Optional: BPM-detect the chosen background track with `@remotion/media-utils` (`getAudioData`) and align scene transitions to beats.
 - [ ] Typewriter sound: every ~3 characters trigger a soft `click.mp3` with `<Audio>` and `startFrom`. Volume around 0.25.
+
+**Landed 2026-06-16 (scaffolding + hook)** — Hook pipeline is fully wired end-to-end; add `hook: { durationInSeconds: 1.5, text: 'Stop using forEach for this', variant: 'mistake' }` to any topic and it renders pre-roll. SFX system is import-ready (`import { sfx } from './sfx'`) and waits on asset files dropping into `public/sfx/`. The render does **not** mount any `<Audio>` for SFX yet — that wiring is deferred until files exist (otherwise renders would 404). Background music is independent and was already live.
 
 ### Files
 

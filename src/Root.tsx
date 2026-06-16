@@ -4,7 +4,8 @@ import { getAudioDurationInSeconds, getVideoMetadata } from '@remotion/media-uti
 import { ShortVideoLayout } from './compositions/ShortVideoLayout';
 import { allTopics } from './_generated/topics';
 import { formats } from './formats';
-import { withOutro } from './outro';
+import { outroStep } from './outro';
+import { TRANSITION_FRAMES } from './motion';
 import type { VideoStep } from './types/content';
 
 const FPS = 30;
@@ -55,12 +56,17 @@ export const RemotionRoot: React.FC = () => (
             defaultProps={topic}
             calculateMetadata={async ({ props }) => {
               const timeline = await resolveTimeline(props.timeline);
-              const durationInFrames = Math.round(
-                withOutro(timeline).reduce(
-                  (acc, step) => acc + step.durationInSeconds,
-                  0
-                ) * FPS
+              const hookFrames = props.hook
+                ? Math.round(props.hook.durationInSeconds * FPS)
+                : 0;
+              const contentFramesRaw = Math.round(
+                timeline.reduce((acc, step) => acc + step.durationInSeconds, 0) * FPS
               );
+              const transitionOverlap =
+                Math.max(0, timeline.length - 1) * TRANSITION_FRAMES;
+              const contentFrames = contentFramesRaw - transitionOverlap;
+              const outroFrames = Math.round(outroStep.durationInSeconds * FPS);
+              const durationInFrames = hookFrames + contentFrames + outroFrames;
               return { durationInFrames, props: { ...props, timeline } };
             }}
           />

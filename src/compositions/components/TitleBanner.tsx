@@ -1,8 +1,9 @@
 import React from 'react';
-import { interpolate, useCurrentFrame } from 'remotion';
+import { spring, useCurrentFrame, useVideoConfig } from 'remotion';
 import type { Theme } from '../../theme';
 import type { LayoutMetrics } from '../../layout-metrics';
 import { interFontFamily } from '../../fonts';
+import { springs } from '../../motion';
 
 interface TitleBannerProps {
   title: string;
@@ -10,16 +11,11 @@ interface TitleBannerProps {
   metrics: LayoutMetrics;
 }
 
-const FADE_IN_FRAMES = 20;
-
 export const TitleBanner: React.FC<TitleBannerProps> = ({ title, theme, metrics }) => {
   const frame = useCurrentFrame();
-  const opacity = interpolate(frame, [0, FADE_IN_FRAMES], [0, 1], {
-    extrapolateRight: 'clamp',
-  });
-  const translateY = interpolate(frame, [0, FADE_IN_FRAMES], [-24, 0], {
-    extrapolateRight: 'clamp',
-  });
+  const { fps } = useVideoConfig();
+  const enter = spring({ frame, fps, config: springs.enter });
+  const translateY = (1 - enter) * -24;
 
   return (
     <div
@@ -30,7 +26,7 @@ export const TitleBanner: React.FC<TitleBannerProps> = ({ title, theme, metrics 
         right: metrics.safePaddingX,
         textAlign: 'center',
         fontFamily: interFontFamily,
-        opacity,
+        opacity: enter,
         transform: `translateY(${translateY}px)`,
       }}
     >

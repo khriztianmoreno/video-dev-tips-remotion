@@ -17,6 +17,9 @@ importers:
       '@remotion/media-utils':
         specifier: ^4.0.477
         version: 4.0.477(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@remotion/transitions':
+        specifier: ^4.0.477
+        version: 4.0.477(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       prism-react-renderer:
         specifier: ^2.4.1
         version: 2.4.1(react@18.3.1)
@@ -377,6 +380,9 @@ packages:
       react: '>=16.8.0'
       react-dom: '>=16.8.0'
 
+  '@remotion/paths@4.0.477':
+    resolution: {integrity: sha512-SJ4GEEuvRnMnGGZZEPaKCQcXy+ArhUnnsTJ17fEwszvMzpuNJB6nOkwe0Zhz/OkY3i83vHtYLJL0v3Fv9We50w==}
+
   '@remotion/player@4.0.477':
     resolution: {integrity: sha512-x0aWSsbXQIlW2V5R6hVksHsyw4CBWN0ctbc0b8Aq5kbAg901vZmDXMekNXyMicqPyzwPRfTeDfpPyGq5RwvOSA==}
     peerDependencies:
@@ -385,6 +391,12 @@ packages:
 
   '@remotion/renderer@4.0.477':
     resolution: {integrity: sha512-OKHhmjLZwvXAOKvby7WCpyHGFUGUFMofKjJMGobx/yeyG0k/So/FSFBJQBBpP8XSdHY1RmFqKpMiKIO5SACB5A==}
+    peerDependencies:
+      react: '>=16.8.0'
+      react-dom: '>=16.8.0'
+
+  '@remotion/shapes@4.0.477':
+    resolution: {integrity: sha512-uJezqpBFHE4rLhzOkaNUF9fFnc9FZ8P01QUDYt9e03/hafA22s6PpO2gsao9hyTRud89+RaBV8jDeJHvwuK6sg==}
     peerDependencies:
       react: '>=16.8.0'
       react-dom: '>=16.8.0'
@@ -406,6 +418,12 @@ packages:
 
   '@remotion/timeline-utils@4.0.477':
     resolution: {integrity: sha512-OsOjNPCNwp08z0KG6OlcQD0UCsAuyIRD4xG+BIXvKaYvsyUiX0+KmsGD7ULANcd/uj6oj3xldNp0yqOi0v6IYA==}
+
+  '@remotion/transitions@4.0.477':
+    resolution: {integrity: sha512-ifJY8aE7WV99L3hUTwRRVmytufqf7HPaDVdWSIWZpbD7zc3RODBfeS2KkJB2gxepzpdh0tpc4e577UgM1LVv8Q==}
+    peerDependencies:
+      react: '>=16.8.0'
+      react-dom: '>=16.8.0'
 
   '@remotion/web-renderer@4.0.477':
     resolution: {integrity: sha512-w8xkoDNg14DbfQXGvx5XfgaPu38dHzX1BFG2lUgMKoB7RfVoXMbU/VHEQ3Xm+vYGxW2Pa3oRgCWqUVprikR4+g==}
@@ -1813,6 +1831,8 @@ snapshots:
       react-dom: 18.3.1(react@18.3.1)
       remotion: 4.0.477(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
 
+  '@remotion/paths@4.0.477': {}
+
   '@remotion/player@4.0.477(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       react: 18.3.1
@@ -1840,6 +1860,13 @@ snapshots:
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
+
+  '@remotion/shapes@4.0.477(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+    dependencies:
+      '@remotion/paths': 4.0.477
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+      remotion: 4.0.477(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
 
   '@remotion/streaming@4.0.477': {}
 
@@ -1909,6 +1936,14 @@ snapshots:
   '@remotion/timeline-utils@4.0.477':
     dependencies:
       mediabunny: 1.45.0
+
+  '@remotion/transitions@4.0.477(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+    dependencies:
+      '@remotion/paths': 4.0.477
+      '@remotion/shapes': 4.0.477(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+      remotion: 4.0.477(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
 
   '@remotion/web-renderer@4.0.477(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
