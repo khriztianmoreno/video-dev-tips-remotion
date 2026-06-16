@@ -16,7 +16,7 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { globSync } from "glob";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { resolve as resolvePath } from "node:path";
 import { pathToFileURL } from "node:url";
 import type { TopicMetadata } from "../src/types/content";
@@ -31,6 +31,9 @@ import { outroStep } from "../src/outro";
 const MCP_URL = "https://www.epidemicsound.com/a/mcp-service/mcp";
 const MANIFEST_FILE = "src/_generated/music-manifest.ts";
 const REFRESH = process.argv.includes("--refresh");
+// Optional positional topic key (e.g. `tips--devtools-network--v1`) to re-fetch ONLY that
+// topic with a brand-new track (deduped against every track already in the manifest).
+const ONLY = process.argv.slice(2).find((a) => !a.startsWith("-")) ?? null;
 
 const apiKey = process.env.EPIDEMIC_SOUND_API_KEY;
 if (!apiKey) {
@@ -174,7 +177,14 @@ const loadManifest = async (): Promise<MusicManifest> => {
 
 async function main() {
   // Every topic gets music: its own bgMusicMood, or the default (lo-fi-hip-hop).
-  const topics = await loadTopics();
+  let topics = await loadTopics();
+  if (ONLY) {
+    topics = topics.filter((t) => topicKey(t.category, t.id, t.version) === ONLY);
+    if (topics.length === 0) {
+      console.error(`No topic matches "${ONLY}".`);
+      process.exit(1);
+    }
+  }
   if (topics.length === 0) {
     console.log("No topics found. Nothing to do.");
     return;
@@ -203,13 +213,23 @@ async function main() {
       console.log(`↷ ${key} pinned to ${topic.bgMusicFile}. Skip.`);
       continue;
     }
-    if (manifest[key] && !REFRESH) {
+    if (manifest[key] && !REFRESH && key !== ONLY) {
       console.log(`↷ ${key} already has music (${manifest[key].title}). Skip.`);
       continue;
     }
 
+    const oldFile = manifest[key]?.file;
     try {
       await fetchForTopic(client, manifest, topic, used);
+      const newFile = manifest[key]?.file;
+      if (oldFile && newFile && oldFile !== newFile) {
+        try {
+          rmSync(`public/${oldFile}`);
+          console.log(`  🧹 removed orphan ${oldFile}`);
+        } catch {
+          /* ignore */
+        }
+      }
     } catch (err) {
       failures++;
       const msg = err instanceof Error ? err.message : String(err);
