@@ -20,10 +20,21 @@ if (!existsSync(MUSIC_MANIFEST_FILE)) {
   console.log('[codegen] Created empty music-manifest.ts');
 }
 
-const files = globSync('content/*/*/v*.ts').sort();
+// New layout: each version is a folder containing one .ts per format
+// (e.g. `v1/vertical.ts`, `v1/square.ts`) and one `STORYBOARD.md`.
+const files = globSync('content/*/*/v*/*.ts').sort();
 
 if (files.length === 0) {
-  console.warn('[codegen] No topics found matching content/*/*/v*.ts');
+  console.warn('[codegen] No topics found matching content/*/*/v*/*.ts');
+}
+
+// Warn (don't fail) when a version folder has format .ts files but no STORYBOARD.md.
+// The skill enforces creation; codegen just surfaces drift.
+const versionDirs = new Set(files.map((f) => f.split('/').slice(0, -1).join('/')));
+for (const dir of versionDirs) {
+  if (!existsSync(`${dir}/STORYBOARD.md`)) {
+    console.warn(`[codegen] Missing STORYBOARD.md in ${dir}`);
+  }
 }
 
 const imports = files

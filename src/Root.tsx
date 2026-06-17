@@ -1,12 +1,12 @@
 import React from 'react';
-import { Composition, staticFile } from 'remotion';
+import { Composition, Folder, staticFile } from 'remotion';
 import { getAudioDurationInSeconds, getVideoMetadata } from '@remotion/media-utils';
 import { ShortVideoLayout } from './compositions/ShortVideoLayout';
 import { allTopics } from './_generated/topics';
-import { formats } from './formats';
+import { formatById } from './formats';
 import { outroStep } from './outro';
 import { TRANSITION_FRAMES } from './motion';
-import type { VideoStep } from './types/content';
+import type { TopicMetadata, VideoStep } from './types/content';
 
 const FPS = 30;
 
@@ -39,39 +39,71 @@ const resolveTimeline = async (timeline: VideoStep[]): Promise<VideoStep[]> =>
     })
   );
 
+// Group: category → topic--version → format variants.
+// Each topic file targets ONE format, so the leaves of the tree are
+// `<category>--<topic>--<version>--<format>` compositions.
+const topicsByCategory: Record<string, TopicMetadata[]> = {};
+for (const t of allTopics) {
+  const list = topicsByCategory[t.category] ?? (topicsByCategory[t.category] = []);
+  list.push(t);
+}
+
+const groupByVersion = (topics: TopicMetadata[]) => {
+  const groups: Record<string, TopicMetadata[]> = {};
+  for (const t of topics) {
+    const key = `${t.id}--${t.version}`;
+    const list = groups[key] ?? (groups[key] = []);
+    list.push(t);
+  }
+  return groups;
+};
+
 export const RemotionRoot: React.FC = () => (
   <>
-    {allTopics.flatMap((topic) =>
-      formats.map((format) => {
-        const id = `${topic.category}--${topic.id}--${topic.version}--${format.id}`;
-        return (
-          <Composition
-            key={id}
-            id={id}
-            component={ShortVideoLayout}
-            fps={FPS}
-            width={format.width}
-            height={format.height}
-            durationInFrames={1}
-            defaultProps={topic}
-            calculateMetadata={async ({ props }) => {
-              const timeline = await resolveTimeline(props.timeline);
-              const hookFrames = props.hook
-                ? Math.round(props.hook.durationInSeconds * FPS)
-                : 0;
-              const contentFramesRaw = Math.round(
-                timeline.reduce((acc, step) => acc + step.durationInSeconds, 0) * FPS
+    {Object.entries(topicsByCategory).map(([category, topics]) => (
+      <Folder key={category} name={category}>
+        {Object.entries(groupByVersion(topics)).map(([versionKey, variants]) => (
+          <Folder key={versionKey} name={versionKey}>
+            {variants.map((topic) => {
+              const format = formatById[topic.format];
+              const id = `${topic.category}--${topic.id}--${topic.version}--${topic.format}`;
+              return (
+                <Composition
+                  key={id}
+                  id={id}
+                  component={ShortVideoLayout}
+                  fps={FPS}
+                  width={format.width}
+                  height={format.height}
+                  durationInFrames={1}
+                  defaultProps={topic}
+                  calculateMetadata={async ({ props }) => {
+                    const timeline = await resolveTimeline(props.timeline);
+                    const hookFrames = props.hook
+                      ? Math.round(props.hook.durationInSeconds * FPS)
+                      : 0;
+                    const contentFramesRaw = Math.round(
+                      timeline.reduce(
+                        (acc, step) => acc + step.durationInSeconds,
+                        0
+                      ) * FPS
+                    );
+                    const transitionOverlap =
+                      Math.max(0, timeline.length - 1) * TRANSITION_FRAMES;
+                    const contentFrames = contentFramesRaw - transitionOverlap;
+                    const outroFrames = Math.round(
+                      outroStep.durationInSeconds * FPS
+                    );
+                    const durationInFrames =
+                      hookFrames + contentFrames + outroFrames;
+                    return { durationInFrames, props: { ...props, timeline } };
+                  }}
+                />
               );
-              const transitionOverlap =
-                Math.max(0, timeline.length - 1) * TRANSITION_FRAMES;
-              const contentFrames = contentFramesRaw - transitionOverlap;
-              const outroFrames = Math.round(outroStep.durationInSeconds * FPS);
-              const durationInFrames = hookFrames + contentFrames + outroFrames;
-              return { durationInFrames, props: { ...props, timeline } };
-            }}
-          />
-        );
-      })
-    )}
+            })}
+          </Folder>
+        ))}
+      </Folder>
+    ))}
   </>
 );

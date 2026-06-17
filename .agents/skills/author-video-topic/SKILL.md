@@ -1,13 +1,13 @@
 ---
 name: author-video-topic
-description: Research a technical topic, design the script (scenes, messages, duration, language) and generate the content/<category>/<topic>/vN.ts file ready to render with Remotion in this project. Use for ANY request to create, plan, or research a video/short, OR to deepen/expand an existing topic (deeper research notes + an improved new version).
+description: Research a technical topic, write a STORYBOARD.md (or update NOTES.md), and generate the `content/<category>/<topic>/v<N>/<format>.ts` data file ready to render with Remotion. Three modes — Create (new vertical topic), Deepen (research + improved next version), Adapt-format (re-design an existing version for square / landscape / portrait without losing the narrative). Use for ANY request to create, plan, research, deepen, or adapt a video/short.
 metadata:
-  tags: content, research, scripting, remotion, video, shorts
+  tags: content, research, scripting, storyboard, remotion, video, shorts, format-adaptation
 ---
 
 ## When to use
 
-Use this skill whenever the user asks to **create, research, plan, or deepen a video**
+Use this skill whenever the user asks to **create, research, plan, deepen, or adapt a video**
 about a technical topic in this project. Typical triggers:
 
 - "Research what `array.filter` is in JS and create a plan for a video." → **Create mode**
@@ -15,38 +15,71 @@ about a technical topic in this project. Typical triggers:
 - "Write me the script for a video about `git rebase`." → **Create mode**
 - "Research `array.filter` more and document/expand the current concept." → **Deepen mode**
 - "Improve the `array-filter` video / make a v2 with deeper examples." → **Deepen mode**
+- "Adapt `devtools-network` v1 to square." → **Adapt-format mode**
+- "Make a landscape version of `array-filter` v2 for YouTube." → **Adapt-format mode**
+- "Design `devtools-network` v2 for IG feed." → **Adapt-format mode**
 
-This skill owns the **content** phase (research → script → write the `.ts`). For
-animations, layout, or rendering, hand off to the `remotion-best-practices` skill
-(see "Hand-off" below). Together they form the full pipeline: this skill decides
-_what_ the video says, `remotion-best-practices` knows _how_ it renders.
+This skill owns the **content** phase (research → STORYBOARD.md → .ts files). For
+animations, layout primitives, transitions, audio plumbing, or rendering, hand off to
+the `remotion-best-practices` skill. Together they form the full pipeline: this skill
+decides _what_ the video says and how its narrative maps to each format; `remotion-best-practices`
+knows _how_ the components render.
 
 ## What it produces
 
-- **Create mode:** a `content/<category>/<topic>/v1.ts` file that satisfies the
-  `TopicMetadata` contract, passes `pnpm typecheck`, and shows up in Remotion Studio.
-- **Deepen mode:** a `content/<category>/<topic>/NOTES.md` research document **plus** an
-  improved next version (`v2.ts`, `v3.ts`, …) derived from it.
+Every authoring task produces TWO kinds of artifacts in lockstep:
 
-The skill runs **end-to-end**: it researches, decides, and writes the files without an
-intermediate approval gate, then reports the plan + the composition ids to render.
+1. **Research artifact** (required, one of):
+   - `content/<category>/<topic>/v<N>/STORYBOARD.md` — the per-version script as a
+     time-coded markdown table (canonical; required for every version).
+   - `content/<category>/<topic>/NOTES.md` — topic-level deep research notes
+     (optional but recommended for deep concepts).
+2. **Data file(s)** — one `.ts` per output format:
+   - `content/<category>/<topic>/v<N>/vertical.ts` — the canonical vertical (9:16).
+   - `content/<category>/<topic>/v<N>/square.ts` — square (1:1) adaptation, when authored.
+   - `content/<category>/<topic>/v<N>/landscape.ts` — landscape (16:9), when authored.
+   - `content/<category>/<topic>/v<N>/portrait.ts` — portrait (4:5), when authored.
+
+**Hard rule.** You may NOT write a `<format>.ts` file unless a `STORYBOARD.md` (or
+sufficient `NOTES.md`) for that version already exists or is created in the same run.
+The .ts is a translation of the storyboard into Remotion data; without the storyboard
+there is no source of truth for the script.
+
+The skill runs **end-to-end**: it researches, writes the storyboard, derives the .ts,
+runs `pnpm typecheck`, and reports the result.
 
 ## Modes — pick automatically
 
-Before doing anything, check whether `content/<category>/<topic>/` already exists (search
-by topic kebab-case across all categories).
+Before doing anything, check the file system:
 
-- **No existing folder → Create mode.** Follow the "Create workflow" below.
-- **Folder already exists → Deepen mode.** The user wants to research more and improve the
-  existing concept. Follow the "Deepen workflow" below. Never overwrite an existing
-  version file.
+```
+content/<category>/<topic>/
+├── NOTES.md                  (optional, topic-level research)
+├── v<N>/
+│   ├── STORYBOARD.md         (per-version, REQUIRED)
+│   ├── vertical.ts           (the canonical format)
+│   └── <format>.ts           (zero or more format adaptations)
+```
 
-If the user explicitly asks to "start over" or "redo from scratch", honor Create mode even
-if the folder exists (but still bump the version, don't clobber).
+Decide which mode based on what exists and what the user asks:
+
+- **No `content/<category>/<topic>/` folder at all → Create mode.**
+  Topic does not exist. Build it from scratch (research → STORYBOARD.md → vertical.ts).
+- **Folder exists, user wants more depth / a better version → Deepen mode.**
+  Triggers: "improve", "deepen", "next version", "research more". Write/update NOTES.md,
+  then create the next `v<N+1>/` folder with a fresh STORYBOARD.md + vertical.ts.
+- **Folder + a version exist, user wants the SAME content in a different format → Adapt-format mode.**
+  Triggers: "adapt to <format>", "design for <platform>", "make a square version".
+  Source version stays untouched. Re-design the script for the target aspect ratio
+  inside the SAME version folder.
+
+If the user explicitly asks to "start over" or "redo from scratch", honor Create mode
+even if the folder exists (but still bump the version, don't clobber).
 
 ## Inputs
 
 - **Required:** the topic (e.g. "array.filter in JS").
+- **Required for Adapt-format mode:** the source version (e.g. "v1") and the target format (`square` | `landscape` | `portrait` | `vertical`).
 - **Optional (infer a default if absent):**
   - `category` → folder under `content/`. Default: `conceptos` to explain an API/concept,
     `tips` for a trick/best practice. Don't invent new categories unless asked.
@@ -57,6 +90,43 @@ if the folder exists (but still bump the version, don't clobber).
   - `target duration` → not fixed. It emerges from the narrative (typically 20–45 s for a
     storytelling explainer). Only constrain it if the user gives a hard limit.
   - `version` → `v1` unless it already exists; then `v2`, etc. (see "Versioning").
+  - `format` (Create mode default) → `vertical`. Create mode never auto-emits other
+    formats — those go through Adapt mode.
+
+## STORYBOARD.md format (canonical script)
+
+Each `v<N>/STORYBOARD.md` is a markdown file with a brief narrative-arc paragraph and a
+single 4-column table. This IS the source of truth for the video — every format `.ts`
+derives from it.
+
+```md
+# <Topic> — Storyboard (v<N>)
+
+Narrative: <one-line arc, e.g. "friction → reveal → benefit → use case → takeaway">.
+Format-specific `.ts` files in this folder derive from this table.
+
+| Tiempo        | Plan Visual (Remotion Setup)                         | Código / Asset a Renderizar                       | Audio (Locución)                          |
+| ------------- | ---------------------------------------------------- | ------------------------------------------------- | ----------------------------------------- |
+| 00:00 - 00:01.5 | `hook` · `variant: shock` — punchline springs in   | Hero: `"<≤ 7-word punchline>"` · Subtext: `"…"`  | "<same as hero, spoken>"                  |
+| 00:01.5 - 00:08 | `step-1` · `code-typewriter` "<sub-heading>"       | `<code or // comment>`                            | "<one sentence>"                          |
+| 00:08 - 00:14 | `step-2` · `code-callout` · `calloutToken: "filter"` | `<code with the highlighted token>`              | "<one sentence>"                          |
+| 00:14 - 00:19 | `step-3` · `quote-hero` (takeaway)                  | `quote: "<distilled mental model>"`               | "<one sentence>"                          |
+| 00:19 - 00:25 | Outro (handled by render pipeline)                  | Brand insignia + `ctaQuestion` + follow           | — (silence; ambient bg music continues)   |
+```
+
+Column rules:
+
+- **Tiempo** — `MM:SS - MM:SS` ranges starting at `00:00` (the hook, if present). Use the
+  declared `durationInSeconds`; don't subtract transition overlap for storyboard timing.
+- **Plan Visual** — references the `id`, the `layout`, and any non-trivial fields
+  (`transition`, `imageFocus`, `calloutToken`, `quote`, hook `variant`).
+- **Código / Asset a Renderizar** — what shows on screen: code snippet (one-liner OR
+  multi-line), image path, or a description.
+- **Audio (Locución)** — the spoken/subtitle line. Same string that ends up in
+  `narrationText` (or `hook.text` for the hook row).
+
+Add a final **Outro** row even though it's not a `VideoStep` — it makes the timing match
+the rendered video.
 
 ## Create workflow (run end-to-end)
 
@@ -171,13 +241,13 @@ version.
 (hook and outro keep their solid background). Default `gradient-drift`. Only override
 when the tone clearly calls for it — switching every video is monotonous in its own way.
 
-| `background`               | Tone                                                                                                |
-| -------------------------- | --------------------------------------------------------------------------------------------------- |
-| `gradient-drift` (default) | Calm, premium, neutral. Works for almost everything.                                                |
-| `solid`                    | Editorial, clean, presentation-y. Use when code density is high and you want zero distraction.      |
-| `noise`                    | Gritty / vintage film-grain. Pairs with hot-takes, retro topics.                                    |
-| `grid`                     | Architectural / blueprint feel. Pairs with infra, tooling, structure topics.                        |
-| `particles`                | Playful, futuristic. Pairs with energy / cyberpunk moods (and a matching `bgMusicMood`).            |
+| `background`               | Tone                                                                                                              |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `gradient-drift` (default) | Calm, premium, neutral. Works for almost everything.                                                              |
+| `solid`                    | Editorial, clean, presentation-y. Use when code density is high and you want zero distraction.                    |
+| `noise`                    | Gritty / vintage film-grain. Pairs with hot-takes, retro topics.                                                  |
+| `grid`                     | Architectural / blueprint feel. Pairs with infra, tooling, structure topics.                                      |
+| `particles`                | Playful, futuristic. Pairs with energy / cyberpunk moods (and a matching `bgMusicMood`).                          |
 | `diagonal-lines`           | The khriztianmoreno key visual: flowing diagonal lines + accent streaks + soft arc + sparkles. On-brand hero look. |
 
 #### Transitions
@@ -243,25 +313,30 @@ motion and voice where it helps:
   and writes the manifest); the render then includes it automatically (per-topic track >
   global `src/audio.ts` > none). Fetching needs an active Epidemic Sound subscription.
 
-### 4. Format decisions
+### 4. Write `STORYBOARD.md` FIRST
 
-Set and state explicitly: language, category, total duration (= sum of scenes), version,
-and `topic` in kebab-case (only `[a-z0-9-]`, must match the folder name and the `id` field).
-`displayTitle` may use capitals/parentheses (e.g. `Array.filter()`).
+Create `content/<category>/<topic>/v1/STORYBOARD.md` with the 4-column table described in
+the "STORYBOARD.md format" section above. This is the canonical script. **You may not skip
+this step or write it after the .ts** — the storyboard is the source of truth.
 
-### 5. Write the file
+If the topic warrants a deeper research artifact (edge cases, perf, comparatives), also
+write `content/<category>/<topic>/NOTES.md` at the topic level. For most concept explainers
+the storyboard alone is enough.
 
-Create `content/<category>/<topic>/v1.ts` with this exact shape (3-level relative import).
+### 5. Write the vertical data file
+
+Create `content/<category>/<topic>/v1/vertical.ts` (note: **4 levels** of relative import).
 This template shows a pre-roll hook, mixed layouts, and one explicit transition — the
 canonical pattern, not all-optional decoration:
 
 ```ts
-import type { TopicMetadata } from "../../../src/types/content";
+import type { TopicMetadata } from "../../../../src/types/content";
 
 export const data: TopicMetadata = {
   id: "<topic-kebab>",
   version: "v1",
   category: "<category>",
+  format: "vertical",
   displayTitle: "<Visible title>",
   // theme is OPTIONAL — omit it to use the brand defaults
   hook: {
@@ -301,25 +376,28 @@ export const data: TopicMetadata = {
 };
 ```
 
+**Create mode emits ONLY `vertical.ts`.** Don't generate `square.ts`, `landscape.ts`, or
+`portrait.ts` from Create mode — those go through Adapt-format mode, which actively
+re-designs the script for each canvas.
+
 ### 6. Validate and report
 
 - Run `pnpm typecheck` and fix any type error before finishing.
-- Report to the user: a research summary, the scene plan as a table, total duration, and
-  the resulting composition ids
-  (`<category>--<topic>--v1--{vertical,square,landscape,portrait}`) with the commands:
+- Report to the user: a research summary, the storyboard table, total duration, and the
+  resulting composition id with the commands:
   ```bash
-  pnpm fetch-music                              # background music (default lo-fi-hip-hop)
-  pnpm render-topic <category>--<topic>--v1
+  pnpm fetch-music                                    # background music (default lo-fi-hip-hop)
+  pnpm render-topic <category>--<topic>--v1           # renders every <format>.ts present in v1/
   ```
 
 ## Deepen workflow (run end-to-end)
 
 For an existing topic the user wants to research further and improve. Produces a research
-doc **and** an improved new version.
+doc **and** an improved new version (with its own STORYBOARD + vertical.ts).
 
 ### 1. Read what exists
 
-Read every `v*.ts` in `content/<category>/<topic>/` and the `NOTES.md` if present.
+Read every `v<N>/vertical.ts`, every `v<N>/STORYBOARD.md`, and `NOTES.md` if present.
 Identify the current scenes, examples, and language so you build on them, don't repeat them.
 
 ### 2. Deepen the research
@@ -331,8 +409,8 @@ patterns. Prefer angles the current version does NOT already cover.
 
 ### 3. Write / update `NOTES.md`
 
-Create or update `content/<category>/<topic>/NOTES.md` as the durable research artifact.
-Suggested structure (keep it in the topic's language, Spanish by default):
+Create or update `content/<category>/<topic>/NOTES.md` as the durable topic-level research
+artifact. Suggested structure (keep it in the topic's language, Spanish by default):
 
 ```md
 # <Topic> — research notes
@@ -359,34 +437,108 @@ Suggested structure (keep it in the topic's language, Spanish by default):
 This file is committed alongside the video and feeds every future version. Append, don't
 discard prior notes — mark anything corrected.
 
-### 4. Derive the improved version
+### 4. Write the new version's STORYBOARD.md + vertical.ts
 
-Create the next version file (`v2.ts` if `v1` exists, etc.) — **never overwrite an existing
-version**. Apply the same **storytelling-first** approach as Create mode (narrative arc →
-scenes → pacing derived from the story, calibrated for intermediate web developers), and
-raise the quality using the deepened research: a sharper hook, a better gotcha, stronger
-use cases, a clearer takeaway. Bump the `version` field to match the filename.
+Create the next version folder (`v2/` if `v1/` exists, etc.) — **never overwrite an existing
+version folder**. Inside it:
+
+1. Write `v2/STORYBOARD.md` from scratch using the deepened research.
+2. Write `v2/vertical.ts` derived from the storyboard.
+
+Apply the same **storytelling-first** approach as Create mode (narrative arc → scenes →
+pacing derived from the story, calibrated for intermediate web developers), and raise the
+quality using the deepened research: a sharper hook, a better gotcha, stronger use cases,
+a clearer takeaway. Bump the `version` field to match the folder.
 
 ### 5. Validate and report
 
 - Run `pnpm typecheck`.
 - Report: what the new research added vs. the old version, a diff-style summary of scene
-  changes, the path to `NOTES.md`, and the new composition ids + render command:
+  changes, the path to `NOTES.md`, and the new composition id + render command:
   ```bash
   pnpm render-topic <category>--<topic>--v2
   ```
   Both versions stay in Studio side by side for A/B comparison.
 
+## Adapt-format workflow (run end-to-end)
+
+For an existing version the user wants to publish in another canvas (square, landscape,
+portrait). The narrative stays — the layout, code length, pacing, and even the hook
+phrasing may NOT.
+
+### 1. Locate the source
+
+Identify the topic, source version, and target format from the request. Verify that
+`content/<category>/<topic>/v<N>/vertical.ts` and `STORYBOARD.md` both exist. If the
+target file already exists (e.g. `v<N>/square.ts`), refuse to overwrite — ask the user
+whether to bump the version instead.
+
+### 2. Read the storyboard + source vertical .ts
+
+Read `STORYBOARD.md` first — it's the canonical script. Then read the vertical `.ts` to
+see the concrete `VideoStep` shape, durations, and layout choices currently chosen.
+
+### 3. Re-design the script for the target format
+
+Do NOT copy the vertical timeline 1:1 and change the dimensions — the layout is the same
+but the FRAMING of every scene must be reconsidered. For each step, ask:
+
+- **Hook (`text`/`subtext`).** Fewer characters fit on landscape (single line, wider).
+  Square reads punchier with shorter words. Verify the hook still lands at the new aspect.
+- **`layout` per step.** Some layouts read very differently per format:
+  - `code-diff` (vermilion vs mint side-by-side) shines on **landscape** (16:9) — two
+    panels side-by-side with breathing room. On vertical/portrait the panels stack and
+    feel narrower. Re-evaluate whether `code-diff` still wins on the target.
+  - `quote-hero` works everywhere but the optimal font scale differs — let the metrics
+    handle it.
+  - `code-callout` works everywhere; the highlight rect lands on the token regardless.
+  - `code-typewriter` with a multi-line snippet may overflow on **square**. Shorten the
+    snippet or split into two steps.
+  - `terminal` benefits from horizontal space — on landscape you can show longer commands
+    without wrap. On vertical, shorter commands.
+- **`codeSnippet` length.** Square has less vertical real-estate for code panels; trim
+  multi-line snippets. Landscape has more horizontal room; you can keep / extend.
+- **`imageFocus`.** Same screenshot, different crop. A region that's centered in
+  vertical may need to shift on landscape. Re-pick `x`/`y` for the target.
+- **Durations.** Slightly faster reading on landscape (eyes scan wider faster), slightly
+  slower on portrait. Re-pace if needed.
+- **`background`.** Some variants shift in feel by aspect (`particles` looks denser on
+  square, sparser on landscape). Re-evaluate.
+
+### 4. Update STORYBOARD.md (optional but encouraged)
+
+If the format adaptation changes timing/layout choices materially, add a note row at the
+bottom of `STORYBOARD.md` summarizing the per-format deltas, or split the storyboard into
+sections per format. Don't delete the canonical (vertical) rows — append.
+
+### 5. Write `<format>.ts`
+
+Create `content/<category>/<topic>/v<N>/<format>.ts` next to the source `vertical.ts`.
+The file structure is identical to `vertical.ts` except `format: "<target-format>"`.
+Use the SAME `id`, `version`, `category`, `displayTitle` — those identify the topic,
+not the format.
+
+### 6. Validate and report
+
+- Run `pnpm typecheck`.
+- Report: a per-step diff vs the source format (what changed and why), the new composition
+  id (`<category>--<topic>--v<N>--<format>`), and the render command:
+  ```bash
+  pnpm render-topic <category>--<topic>--v<N>     # now renders all formats in v<N>/
+  ```
+
 ## Hand-off to `remotion-best-practices`
 
-This skill stops at the data file. If the task also requires changing **how** the video
-looks or renders — new animations, layout/components, transitions, audio/voiceover,
-captions, format/resolution, or any actual render — load the `remotion-best-practices`
-skill for that work. Don't reimplement Remotion knowledge here.
+This skill stops at the data file + storyboard. If the task also requires changing **how**
+the video looks or renders — new animations, layout components, transitions, audio/voiceover,
+captions, the per-format rendering pipeline, or any actual render — load the
+`remotion-best-practices` skill for that work. Don't reimplement Remotion knowledge here.
 
 ## Type contract (reference)
 
 ```ts
+type FormatId = "vertical" | "square" | "landscape" | "portrait";
+
 type StepLayout =
   | "code-typewriter" // default
   | "code-callout"
@@ -428,8 +580,9 @@ type Hook = {
 
 type TopicMetadata = {
   id: string;
-  version: string; // 'v1', 'v2', …
+  version: string; // 'v1', 'v2', …  (matches the v<N>/ folder name)
   category: string; // folder under content/
+  format: FormatId; // REQUIRED — target canvas for this file
   displayTitle: string;
   theme?: Partial<Theme>; // optional; omit = brand defaults
   ctaQuestion?: string; // open question shown on the outro (override the default)
@@ -446,14 +599,33 @@ type TopicMetadata = {
 };
 ```
 
-Source of truth: `src/types/content.ts` and `src/theme.ts`. If they differ from this
-reference, the project files win.
+Source of truth: `src/types/content.ts`, `src/formats.ts`, and `src/theme.ts`. If they
+differ from this reference, the project files win.
+
+## File layout (canonical)
+
+```
+content/<category>/<topic>/
+├── NOTES.md                  (optional, topic-level deep research)
+├── CREDITS.md                (optional, image/3rd-party attribution)
+└── v<N>/                     (one folder per version — never overwrite)
+    ├── STORYBOARD.md         (REQUIRED, per-version script)
+    ├── vertical.ts           (the canonical format, written first)
+    ├── square.ts             (Adapt mode output — only when authored)
+    ├── landscape.ts          (Adapt mode output — only when authored)
+    └── portrait.ts           (Adapt mode output — only when authored)
+```
 
 ## Versioning
 
-If `content/<category>/<topic>/v1.ts` already exists, **do not overwrite it**: create
-`v2.ts` (or the next number) with an updated `version`. Both versions show up as
-independent compositions in Studio (great for A/B comparisons).
+- A "version" is a directory `v<N>/` containing a `STORYBOARD.md` and one or more
+  `<format>.ts` files. The directory name is the version identifier (`v1`, `v2`, …).
+- The `version` field inside each `<format>.ts` MUST match the parent folder name.
+- **Never overwrite an existing version folder.** Deepen mode creates `v<N+1>/`. Adapt mode
+  writes a new `<format>.ts` INSIDE the existing version folder.
+- Within a version folder, every `<format>.ts` shares the same `version`, `id`,
+  `category`, and `displayTitle`, but `format` differs. Everything else (layout,
+  durations, code length) may be tailored per format.
 
 ## Conventions and constraints
 
@@ -463,6 +635,8 @@ independent compositions in Studio (great for A/B comparisons).
   CTA — the outro comes after it for free. **Do** set a topic-specific `ctaQuestion` (an open
   question that invites comments, e.g. "¿Tu peor cuello de botella?"); without it a generic
   default is used. To change the handle/image/follow copy, edit `src/outro.ts`.
+- **One format per file.** Don't try to encode multiple aspect ratios in one `.ts`.
+- **Create mode emits ONLY `vertical.ts`.** Other formats go through Adapt mode.
 - **Default language: Spanish.** Keep `title` and `narrationText` consistent in one language.
 - Topic `id`, folder name, and kebab-case must all match.
 - Composition id only allows `[a-zA-Z0-9-]`; the project separator is `--`.
@@ -472,7 +646,15 @@ independent compositions in Studio (great for A/B comparisons).
 
 ## Quality checklist (before finishing)
 
+### All modes
+
 - [ ] Wrote the narrative arc first; scene count and durations come FROM the story (no quota).
+- [ ] **Research artifact exists:** wrote/updated `STORYBOARD.md` BEFORE the `.ts`. NOTES.md exists when the topic warrants deep research.
+- [ ] `pnpm typecheck` passes.
+- [ ] Reported plan + composition id(s) + render command.
+
+### Create mode
+
 - [ ] Arc covers pre-roll hook → why it's needed → function → benefit → real use case → takeaway (the beats that fit this topic), calibrated for intermediate web developers.
 - [ ] `hook` is set (≤ 7-word `text`, 1.2–2 s, `variant` matches the tone).
 - [ ] First `VideoStep` shows the friction/pain — it does NOT repeat the hook line.
@@ -482,6 +664,19 @@ independent compositions in Studio (great for A/B comparisons).
 - [ ] `calloutToken` matches a substring that actually appears in the same step's `codeSnippet` (case-sensitive).
 - [ ] Each `durationInSeconds` fits the narration length + code typing time (not a bucket).
 - [ ] Realistic data in examples, no `foo`/`bar`; one idea per scene.
-- [ ] `pnpm typecheck` passes.
-- [ ] Reported plan + composition ids + render command.
-- [ ] **Deepen mode only:** wrote/updated `NOTES.md`, created a NEW version (didn't overwrite), and the new research actually adds beyond the previous version.
+- [ ] **Wrote only `vertical.ts`.** Did not auto-emit other formats.
+
+### Deepen mode
+
+- [ ] Wrote/updated `NOTES.md` with new research that's distinct from prior versions.
+- [ ] Created a NEW `v<N+1>/` folder (didn't overwrite).
+- [ ] Wrote `v<N+1>/STORYBOARD.md` from scratch and `v<N+1>/vertical.ts` derived from it.
+- [ ] The new version actually adds beyond the previous (sharper hook, better example, new gotcha).
+
+### Adapt-format mode
+
+- [ ] Verified the source `<sourceFormat>.ts` and `STORYBOARD.md` exist.
+- [ ] Did NOT overwrite an existing target-format `.ts`.
+- [ ] For EVERY step, explicitly reconsidered: hook text length, layout choice, code length, `imageFocus`, durations, and background.
+- [ ] Wrote a concise per-step diff vs the source format in the report.
+- [ ] All shared fields (`id`, `version`, `category`, `displayTitle`) match the source file exactly.

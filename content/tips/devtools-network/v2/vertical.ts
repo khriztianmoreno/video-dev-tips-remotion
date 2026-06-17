@@ -1,4 +1,4 @@
-import type { TopicMetadata } from "../../../src/types/content";
+import type { TopicMetadata } from "../../../../src/types/content";
 
 // Same storytelling arc as v1 (friction → open → read → simulate → block → takeaway),
 // now using the post-refactor primitives:
@@ -11,6 +11,7 @@ export const data: TopicMetadata = {
   id: "devtools-network",
   version: "v2",
   category: "tips",
+  format: "vertical",
   displayTitle: "DevTools: Network",
   bgMusicMood: "lo-fi-hip-hop",
   ctaQuestion:

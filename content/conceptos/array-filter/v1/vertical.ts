@@ -1,9 +1,10 @@
-import type { TopicMetadata } from "../../../src/types/content";
+import type { TopicMetadata } from "../../../../src/types/content";
 
 export const data: TopicMetadata = {
   id: "array-filter",
   version: "v1",
   category: "conceptos",
+  format: "vertical",
   displayTitle: "Array.filter()",
   bgMusicMood: "lo-fi-hip-hop",
   timeline: [

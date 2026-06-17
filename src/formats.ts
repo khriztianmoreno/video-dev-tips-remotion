@@ -43,3 +43,8 @@ export const formats: readonly Format[] = [
     description: 'Instagram feed (tall crop), Pinterest',
   },
 ] as const;
+
+/** Lookup by `FormatId`, typed so callers don't need null-checks. */
+export const formatById = Object.fromEntries(
+  formats.map((f) => [f.id, f])
+) as Record<FormatId, Format>;

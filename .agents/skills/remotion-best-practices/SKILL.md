@@ -121,8 +121,13 @@ cross-fades manually with `interpolate`** between scenes — use the existing wr
 
 ### Composition multiplexing
 
-`src/Root.tsx` emits `topics × formats` (4 formats per topic: vertical, square,
-landscape, portrait). All sizing must be format-agnostic — rely on `getLayoutMetrics()`
+`src/Root.tsx` emits **one composition per topic file** (no implicit format expansion).
+Each `content/<category>/<topic>/v<N>/<format>.ts` declares `format: FormatId` and is
+emitted as `<category>--<topic>--<version>--<format>`. The Studio sidebar groups them in
+`<Folder>`s by category → topic--version. To publish a topic in multiple aspect ratios,
+author one file per format (`vertical.ts`, `square.ts`, `landscape.ts`, `portrait.ts`)
+inside the same `v<N>/` folder — that's what the `author-video-topic` skill's
+Adapt-format mode produces. All sizing must be format-agnostic — rely on `getLayoutMetrics()`
 for any width/height-dependent value.
 
 ### What NOT to do
@@ -150,7 +155,8 @@ for any width/height-dependent value.
 | Background catalog | `src/backgrounds.ts` |
 | Responsive metrics | `src/layout-metrics.ts` |
 | Theme | `src/theme.ts` |
-| Output formats catalog | `src/formats.ts` |
+| Output formats catalog + `formatById` lookup | `src/formats.ts` |
+| Content authoring layout | `content/<category>/<topic>/v<N>/{STORYBOARD.md,<format>.ts}` |
 | Music resolution | `src/music.ts`, `src/music-resolve.ts`, `src/audio.ts` |
 | SFX catalog | `src/sfx.ts` |
 | Types | `src/types/content.ts` |

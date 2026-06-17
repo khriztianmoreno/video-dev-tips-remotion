@@ -2,6 +2,7 @@ import React from 'react';
 import {
   AbsoluteFill,
   Img,
+  Video,
   interpolate,
   spring,
   staticFile,
@@ -15,6 +16,8 @@ import {
   DEFAULT_OUTRO_QUESTION,
   FOLLOW_LABEL,
   HEART_IMAGE_URL,
+  OUTRO_BG_VIDEO,
+  OUTRO_BG_VIDEO_OPACITY,
   OUTRO_IMAGE_URL,
 } from '../../outro';
 
@@ -45,71 +48,85 @@ export const OutroScene: React.FC<OutroSceneProps> = ({
   });
 
   return (
-    <AbsoluteFill
-      style={{
-        backgroundColor: theme.backgroundColor,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: metrics.contentGap,
-        padding: metrics.safePaddingX,
-        fontFamily: interFontFamily,
-      }}
-    >
-      <Img
-        src={resolveSrc(OUTRO_IMAGE_URL)}
+    <AbsoluteFill style={{ backgroundColor: theme.backgroundColor }}>
+      <Video
+        src={staticFile(OUTRO_BG_VIDEO)}
+        muted
+        loop
         style={{
-          width: '78%',
-          maxHeight: '45%',
-          objectFit: 'contain',
-          opacity: imageOpacity,
-          transform: `scale(${0.92 + 0.08 * enter})`,
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          opacity: OUTRO_BG_VIDEO_OPACITY,
         }}
       />
-      <div
+      <AbsoluteFill
         style={{
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          gap: metrics.contentGap * 0.6,
-          opacity: messageOpacity,
-          maxWidth: '92%',
+          justifyContent: 'center',
+          gap: metrics.contentGap,
+          padding: metrics.safePaddingX,
+          fontFamily: interFontFamily,
         }}
       >
-        <span
+        <Img
+          src={resolveSrc(OUTRO_IMAGE_URL)}
           style={{
-            color: theme.primaryColor,
-            fontSize: metrics.stepTitleFontSize,
-            fontWeight: 800,
-            textAlign: 'center',
-            lineHeight: 1.2,
+            width: '78%',
+            maxHeight: '45%',
+            objectFit: 'contain',
+            opacity: imageOpacity,
+            transform: `scale(${0.92 + 0.08 * enter})`,
           }}
-        >
-          {question ?? DEFAULT_OUTRO_QUESTION}
-        </span>
+        />
         <div
           style={{
             display: 'flex',
+            flexDirection: 'column',
             alignItems: 'center',
-            gap: metrics.narrationFontSize * 0.5,
+            gap: metrics.contentGap * 0.6,
+            opacity: messageOpacity,
+            maxWidth: '92%',
           }}
         >
           <span
             style={{
-              color: theme.mutedTextColor,
-              fontSize: metrics.narrationFontSize,
-              fontWeight: 600,
+              color: theme.primaryColor,
+              fontSize: metrics.stepTitleFontSize,
+              fontWeight: 800,
+              textAlign: 'center',
+              lineHeight: 1.2,
             }}
           >
-            {FOLLOW_LABEL}
+            {question ?? DEFAULT_OUTRO_QUESTION}
           </span>
-          <Img
-            src={resolveSrc(HEART_IMAGE_URL)}
-            style={{ height: metrics.narrationFontSize, objectFit: 'contain' }}
-          />
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: metrics.narrationFontSize * 0.5,
+            }}
+          >
+            <span
+              style={{
+                color: theme.mutedTextColor,
+                fontSize: metrics.narrationFontSize,
+                fontWeight: 600,
+              }}
+            >
+              {FOLLOW_LABEL}
+            </span>
+            <Img
+              src={resolveSrc(HEART_IMAGE_URL)}
+              style={{ height: metrics.narrationFontSize, objectFit: 'contain' }}
+            />
+          </div>
         </div>
-      </div>
+      </AbsoluteFill>
     </AbsoluteFill>
   );
 };

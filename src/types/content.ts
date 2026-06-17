@@ -1,5 +1,6 @@
 import type { Theme } from '../theme';
 import type { BackgroundKind } from '../backgrounds';
+import type { FormatId } from '../formats';
 
 /** Controlled vocabulary of background-music moods (mapped to Epidemic Sound genre slugs). */
 export type BgMusicMood =
@@ -111,6 +112,13 @@ export type TopicMetadata = {
   id: string;
   version: string;
   category: string;
+  /**
+   * Output canvas the file is designed for. Each topic file targets ONE format —
+   * to publish the same topic in multiple formats, author one file per format
+   * (e.g. `v1/vertical.ts`, `v1/square.ts`) so the layout, code length, and
+   * pacing can be tailored to each aspect ratio.
+   */
+  format: FormatId;
   displayTitle: string;
   theme?: Partial<Theme>;
   /**

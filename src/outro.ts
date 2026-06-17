@@ -16,6 +16,16 @@ export const OUTRO_IMAGE_URL =
 export const HEART_IMAGE_URL = 'brand/love.png';
 
 /**
+ * Looping background video for the outro scene (path relative to `public/`).
+ * Plays muted, fitted with `object-fit: cover`, at reduced opacity so the brand
+ * insignia and CTA remain readable on top. Swap this constant to change the loop.
+ */
+export const OUTRO_BG_VIDEO = 'brand/outro-loop.mp4';
+
+/** Opacity of the background loop (0–1). Lower = quieter motion, higher = more present. */
+export const OUTRO_BG_VIDEO_OPACITY = 0.85;
+
+/**
  * Open question shown on the outro to spark comments. A topic can override it with
  * `ctaQuestion` in its `TopicMetadata`; otherwise this generic one is used.
  */

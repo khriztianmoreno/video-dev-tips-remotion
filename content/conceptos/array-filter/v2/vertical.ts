@@ -1,11 +1,12 @@
-import type { TopicMetadata } from "../../../src/types/content";
+import type { TopicMetadata } from "../../../../src/types/content";
 
-// Storytelling arc (audience: intermediate web devs) — see NOTES.md "Narrativa del video".
+// Storytelling arc (audience: intermediate web devs) — see ./STORYBOARD.md.
 // Scene count and per-scene durations are derived from the narrative, not a fixed quota.
 export const data: TopicMetadata = {
   id: "array-filter",
   version: "v2",
   category: "conceptos",
+  format: "vertical",
   displayTitle: "Array.filter()",
   bgMusicMood: "lo-fi-hip-hop",
   timeline: [

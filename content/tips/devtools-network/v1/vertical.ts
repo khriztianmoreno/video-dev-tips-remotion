@@ -1,4 +1,4 @@
-import type { TopicMetadata } from "../../../src/types/content";
+import type { TopicMetadata } from "../../../../src/types/content";
 
 // Storytelling arc (audience: intermediate web devs).
 // Pain (slow app, can't tell why) -> open Network -> read the waterfall/timing ->
@@ -8,6 +8,7 @@ export const data: TopicMetadata = {
   id: "devtools-network",
   version: "v1",
   category: "tips",
+  format: "vertical",
   displayTitle: "DevTools: Network",
   bgMusicMood: "lo-fi-hip-hop",
   background: "diagonal-lines",
