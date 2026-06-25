@@ -106,6 +106,8 @@ export type Hook = {
    * `mistake` = vermilion accent (warning vibe). Default `shock`.
    */
   variant?: 'shock' | 'question' | 'mistake';
+  /** Optional voiceover for the hook. When set, `durationInSeconds` is derived from the audio length. */
+  audioUrl?: string;
 };
 
 export type TopicMetadata = {

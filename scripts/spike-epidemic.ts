@@ -3,13 +3,19 @@
  * over HTTP + API key, list its tools, and run a real `search_music` call.
  *
  * Usage:
- *   export EPIDEMIC_SOUND_API_KEY="..."   # https://www.epidemicsound.com/account/api-keys
+ *   # Reads EPIDEMIC_SOUND_API_KEY from `.env` (auto-loaded) or the shell env.
  *   pnpm exec tsx scripts/spike-epidemic.ts
  *
  * It does not download anything or modify the project: read-only and reports.
  */
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
+import { existsSync } from 'node:fs';
+import { resolve as resolvePath } from 'node:path';
+
+// Load `.env` (gitignored) if present. Node 22+ has `loadEnvFile` built-in.
+const ENV_FILE = resolvePath('.env');
+if (existsSync(ENV_FILE)) process.loadEnvFile(ENV_FILE);
 
 const MCP_URL = 'https://www.epidemicsound.com/a/mcp-service/mcp';
 

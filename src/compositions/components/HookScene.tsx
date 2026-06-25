@@ -1,5 +1,5 @@
 import React from 'react';
-import { spring, useCurrentFrame, useVideoConfig } from 'remotion';
+import { Audio, spring, staticFile, useCurrentFrame, useVideoConfig } from 'remotion';
 import type { Hook } from '../../types/content';
 import type { Theme } from '../../theme';
 import type { LayoutMetrics } from '../../layout-metrics';
@@ -17,6 +17,11 @@ const VERMILION = '#DD4A28';
 export const HookScene: React.FC<HookSceneProps> = ({ hook, theme, metrics }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
+  const audioSrc = hook.audioUrl
+    ? hook.audioUrl.startsWith('http')
+      ? hook.audioUrl
+      : staticFile(hook.audioUrl)
+    : null;
 
   const heroSpring = spring({ frame, fps, config: springs.punch });
   const subSpring = spring({ frame: frame - 10, fps, config: springs.enterSubtle });
@@ -63,6 +68,7 @@ export const HookScene: React.FC<HookSceneProps> = ({ hook, theme, metrics }) =>
           <span style={{ color: accent, marginLeft: 8 }}>?</span>
         )}
       </div>
+      {audioSrc && <Audio src={audioSrc} />}
       {hook.subtext && (
         <div
           style={{

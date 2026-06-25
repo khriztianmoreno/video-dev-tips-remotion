@@ -6,7 +6,7 @@
  * never touches the network; it just reads the manifest.
  *
  * Usage:
- *   export EPIDEMIC_SOUND_API_KEY="..."   # https://www.epidemicsound.com/account/api-keys
+ *   # Reads EPIDEMIC_SOUND_API_KEY from `.env` (auto-loaded) or the shell env.
  *   pnpm fetch-music            # idempotent: skips topics already in the manifest
  *   pnpm fetch-music --refresh  # re-fetch even if already present
  *
@@ -16,9 +16,14 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { globSync } from "glob";
-import { mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { resolve as resolvePath } from "node:path";
 import { pathToFileURL } from "node:url";
+
+// Load `.env` (gitignored) if present. Node 22+ has `loadEnvFile` built-in, so
+// no `dotenv` dependency is needed. Variables already in the shell take precedence.
+const ENV_FILE = resolvePath(".env");
+if (existsSync(ENV_FILE)) process.loadEnvFile(ENV_FILE);
 import type { TopicMetadata } from "../src/types/content";
 import {
   DEFAULT_BG_MUSIC_MOOD,
@@ -154,14 +159,37 @@ async function editToLength(
   throw new Error("Edit job timeout");
 }
 
+/**
+ * Load every content file (`content/<category>/<topic>/v<n>/<format>.ts`) and
+ * deduplicate by `topicKey` — the music manifest is keyed per topic-version, not
+ * per format, so we want ONE representative TopicMetadata per `<cat>--<id>--<ver>`.
+ * When multiple formats exist for the same version we prefer the one with the
+ * longest timeline so the picked track covers every format.
+ */
 const loadTopics = async (): Promise<TopicMetadata[]> => {
-  const files = globSync("content/*/*/v*.ts").sort();
-  const topics: TopicMetadata[] = [];
+  const files = globSync("content/*/*/v*/*.ts").sort();
+  const byKey = new Map<string, TopicMetadata>();
   for (const f of files) {
     const mod = await import(pathToFileURL(resolvePath(f)).href);
-    if (mod.data) topics.push(mod.data as TopicMetadata);
+    const data = mod.data as TopicMetadata | undefined;
+    if (!data) continue;
+    const key = topicKey(data.category, data.id, data.version);
+    const existing = byKey.get(key);
+    if (!existing) {
+      byKey.set(key, data);
+      continue;
+    }
+    const existingDuration = existing.timeline.reduce(
+      (a, s) => a + s.durationInSeconds,
+      0,
+    );
+    const candidateDuration = data.timeline.reduce(
+      (a, s) => a + s.durationInSeconds,
+      0,
+    );
+    if (candidateDuration > existingDuration) byKey.set(key, data);
   }
-  return topics;
+  return [...byKey.values()];
 };
 
 const loadManifest = async (): Promise<MusicManifest> => {

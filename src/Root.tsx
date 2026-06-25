@@ -26,7 +26,7 @@ const resolveTimeline = async (timeline: VideoStep[]): Promise<VideoStep[]> =>
       try {
         if (step.audioUrl) {
           const sec = await getAudioDurationInSeconds(resolveSrc(step.audioUrl));
-          return { ...step, durationInSeconds: round1(sec + 0.4) };
+          return { ...step, durationInSeconds: round1(sec + 1.2) };
         }
         if (step.videoUrl) {
           const meta = await getVideoMetadata(resolveSrc(step.videoUrl));
@@ -79,9 +79,18 @@ export const RemotionRoot: React.FC = () => (
                   defaultProps={topic}
                   calculateMetadata={async ({ props }) => {
                     const timeline = await resolveTimeline(props.timeline);
-                    const hookFrames = props.hook
-                      ? Math.round(props.hook.durationInSeconds * FPS)
-                      : 0;
+                    let hookSec = props.hook?.durationInSeconds ?? 0;
+                    if (props.hook?.audioUrl) {
+                      try {
+                        const dur = await getAudioDurationInSeconds(
+                          resolveSrc(props.hook.audioUrl)
+                        );
+                        hookSec = round1(dur + 0.7);
+                      } catch {
+                        // keep declared durationInSeconds
+                      }
+                    }
+                    const hookFrames = Math.round(hookSec * FPS);
                     const contentFramesRaw = Math.round(
                       timeline.reduce(
                         (acc, step) => acc + step.durationInSeconds,
@@ -96,7 +105,10 @@ export const RemotionRoot: React.FC = () => (
                     );
                     const durationInFrames =
                       hookFrames + contentFrames + outroFrames;
-                    return { durationInFrames, props: { ...props, timeline } };
+                    const hook = props.hook
+                      ? { ...props.hook, durationInSeconds: hookSec }
+                      : undefined;
+                    return { durationInFrames, props: { ...props, timeline, hook } };
                   }}
                 />
               );
